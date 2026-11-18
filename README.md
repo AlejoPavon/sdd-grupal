@@ -7,7 +7,7 @@
 ![NodeJS](https://img.shields.io/badge/node.js-LTS-339933?style=for-the-badge&logo=node.js&logoColor=white)
 ![OpenCode](https://img.shields.io/badge/AI_Agent-OpenCode-8b5cf6?style=for-the-badge&logo=openai&logoColor=white)
 
-Sistema integral de gestión de turnos y agenda de pacientes para consultorios odontológicos en Argentina. Desarrollado bajo la metodología **Spec-Driven Development (SDD)** con el ciclo **OPSX** (`explore → propose → apply → verify → archive`), utilizando **Active Stack** como harness metodológico y **OpenSpec** como fuente de verdad para el ciclo de vida del software.
+Sistema de gestión de turnos y agenda para consultorios odontológicos en Argentina, con foco en un **MVP de agenda sin solapamientos** por profesional y por sillón. Desarrollado bajo la metodología **Spec-Driven Development (SDD)** con el ciclo **OPSX** (`explore → propose → apply → verify → archive`), utilizando **Active Stack** como harness metodológico y **OpenSpec** como fuente de verdad para el ciclo de vida del software.
 
 > **Materia:** Metodología I — Tecnicatura Universitaria en Programación  
 > **Integrantes:** Nathaniel Herrera · Lucas Timmermann · Aracelly Caballero · Javier Alaniz · Alejo Pavon  
@@ -35,11 +35,23 @@ Estado de avance del proceso de fundación del repositorio:
 |---|:---:|---|---|
 | **0. Preparación del Entorno** | Completada | Active Stack Full, OpenSpec 2.1.0, Engram 3.7.2 | Equipo |
 | **1. Discovery & Investigación** | Completada | `docs/discovery/informe-discovery.md` (20 sistemas) | Equipo |
-| **2. Knowledge Base (KB)** | En Progreso | `knowledge-base/` (dominio, arquitectura y decisiones) | Alejo Pavon |
-| **3. Roadmap** | Pendiente | `CHANGES.md` (lista priorizada de changes y dependencias) | Equipo |
+| **2. Knowledge Base (KB)** | Completada | `knowledge-base/` (10 archivos canónicos + README) | Alejo Pavon |
+| **3. Roadmap** | Completada | `CHANGES.md` (19 changes, 8 fases) | Alejo Pavon |
 | **4. Task Management** | Pendiente | Tracking local en `.active-stack/roadmap.json` | Equipo |
 | **5. Find Skill & Registry** | Pendiente | `.atl/skill-registry.md` (skills instaladas y auditadas) | Equipo |
 | **6. Agent Instructions** | Pendiente | `AGENTS.md` / `CLAUDE.md` con reglas del agente | Equipo |
+
+### Reparto del equipo
+
+El detalle operativo, las ramas y los criterios de cada tarea están en [`docs/equipo/README.md`](docs/equipo/README.md).
+
+| Integrante | Changes asignados | Ola |
+|---|---|---|
+| Alejo Pavon | Fundación (Discovery, KB, roadmap, estado) + integración de PRs | 0 y 6 |
+| Nathaniel Herrera | C-01 `foundation-setup`, C-02 `core-domain-models` | 1 |
+| Lucas Timmermann | C-03 `turno-creation`, C-04 `agenda-queries`, C-05 `turno-cancellation` | 2 y 3 |
+| Aracelly Caballero | C-06 `pacientes-crud`, C-10 `sqlite-persistence` | 2 y 4 |
+| Javier Alaniz | C-09 `auth-rbac`, C-07 `bloqueos-agenda`, C-08 `sobreturnos` | 3, 4 y 5 |
 
 ---
 
@@ -74,11 +86,20 @@ Se relevó el mercado argentino, latinoamericano e internacional (10 AR, 5 LATAM
 │       └── openspec-update-change/
 ├── .claude/                              # Compatibilidad de skills para Claude Code
 ├── docs/                                 # Documentación y evidencias
-│   └── discovery/
-│       ├── discovery.md                  # Checklist estructurado de 11 puntos
-│       ├── informe-discovery.md          # Informe completo con tabla de 20 sistemas
-│       ├── informe-discovery.html        # Render HTML del informe
-│       └── informe-discovery.pdf         # Versión imprimible para entrega
+│   ├── discovery/
+│   │   ├── discovery.md                  # Checklist estructurado de 11 puntos
+│   │   ├── informe-discovery.md          # Informe completo con tabla de 20 sistemas
+│   │   ├── informe-discovery.html        # Render HTML del informe
+│   │   └── informe-discovery.pdf         # Versión imprimible para entrega
+│   └── equipo/                           # Reparto de tareas y guías por integrante
+│       ├── README.md                     # Olas, convenciones y flujo Git
+│       ├── alejo-pavon.md
+│       ├── nathaniel-herrera.md
+│       ├── lucas-timmermann.md
+│       ├── aracelly-caballero.md
+│       └── javier-alaniz.md
+├── knowledge-base/                       # Base de conocimiento (10 canónicos + README)
+├── CHANGES.md                            # Roadmap: 19 changes en 8 fases
 ├── openspec/                             # Workspace OpenSpec
 │   ├── config.yaml                       # Reglas de herramientas y esquemas
 │   ├── changes/                          # Changes activos y archivados

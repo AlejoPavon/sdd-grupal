@@ -15,6 +15,12 @@ coverage/
 .env
 .env.local
 
+# Base de datos local
+data/
+*.db
+*.db-shm
+*.db-wal
+
 # Logs
 *.log
 
