@@ -1,4 +1,4 @@
-# 🦷 Turnos Odontología — Sistema de Gestión de Turnos y Agenda
+# Turnos Odontología — Sistema de Gestión de Turnos y Agenda
 
 ![SDD](https://img.shields.io/badge/Methodology-Spec--Driven_Development-00ADD8?style=for-the-badge&logo=blueprint&logoColor=white)
 ![OpenSpec](https://img.shields.io/badge/OpenSpec-v2.1.0-14b8a6?style=for-the-badge&logo=buffer&logoColor=white)
@@ -33,13 +33,13 @@ Estado de avance del proceso de fundación del repositorio:
 
 | Etapa | Estado | Artefactos / Salida | Responsable / Rol |
 |---|:---:|---|---|
-| **0. Preparación del Entorno** | ✅ Completada | Active Stack Full, OpenSpec 2.1.0, Engram 3.7.2 | Equipo |
-| **1. Discovery & Investigación** | ✅ Completada | `docs/discovery/informe-discovery.md` (20 sistemas) | Equipo |
-| **2. Knowledge Base (KB)** | ⏳ En Progreso | `knowledge-base/` (dominio, arquitectura y decisiones) | Alejo Pavon |
-| **3. Roadmap** | ⏳ Pendiente | `CHANGES.md` (lista priorizada de changes y dependencias) | Equipo |
-| **4. Task Management** | ⏳ Pendiente | Tracking local en `.active-stack/roadmap.json` | Equipo |
-| **5. Find Skill & Registry** | ⏳ Pendiente | `.atl/skill-registry.md` (skills instaladas y auditadas) | Equipo |
-| **6. Agent Instructions** | ⏳ Pendiente | `AGENTS.md` / `CLAUDE.md` con reglas del agente | Equipo |
+| **0. Preparación del Entorno** | Completada | Active Stack Full, OpenSpec 2.1.0, Engram 3.7.2 | Equipo |
+| **1. Discovery & Investigación** | Completada | `docs/discovery/informe-discovery.md` (20 sistemas) | Equipo |
+| **2. Knowledge Base (KB)** | En Progreso | `knowledge-base/` (dominio, arquitectura y decisiones) | Alejo Pavon |
+| **3. Roadmap** | Pendiente | `CHANGES.md` (lista priorizada de changes y dependencias) | Equipo |
+| **4. Task Management** | Pendiente | Tracking local en `.active-stack/roadmap.json` | Equipo |
+| **5. Find Skill & Registry** | Pendiente | `.atl/skill-registry.md` (skills instaladas y auditadas) | Equipo |
+| **6. Agent Instructions** | Pendiente | `AGENTS.md` / `CLAUDE.md` con reglas del agente | Equipo |
 
 ---
 
