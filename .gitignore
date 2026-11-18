@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Node
+node_modules/
+dist/
+coverage/
+
+# Env
+.env
+.env.local
+
+# Logs
+*.log
+
+# OpenCode local
+.opencode/
