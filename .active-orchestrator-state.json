@@ -1,7 +1,58 @@
 {
   "version": 5,
-  "step": "discovery",
+  "step": "task-management",
   "owner": "active-orchestrator",
+  "kb": {
+    "created_by": "kb-creator",
+    "source": "ingest",
+    "discovery": {
+      "problem": "Los consultorios odontologicos argentinos no tienen una garantia verificable de que un turno no se superponga con otro del mismo profesional ni del mismo sillon.",
+      "system_type": "web_app (API REST)",
+      "domain": "salud / gestion de turnos odontologicos",
+      "scale": "team (consultorio con recepcion y varios profesionales); public_multi_user futuro",
+      "stack": "Node.js 20 LTS + TypeScript 5 + Fastify 4 + Zod + Vitest; persistencia en memoria en el MVP",
+      "needs_infra": false
+    },
+    "files": [
+      "knowledge-base/README.md",
+      "knowledge-base/01_vision_y_objetivos.md",
+      "knowledge-base/02_descripcion_general.md",
+      "knowledge-base/03_actores_y_roles.md",
+      "knowledge-base/04_modelo_de_datos.md",
+      "knowledge-base/05_reglas_de_negocio.md",
+      "knowledge-base/06_funcionalidades.md",
+      "knowledge-base/07_flujos_principales.md",
+      "knowledge-base/08_arquitectura_propuesta.md",
+      "knowledge-base/09_decisiones_y_supuestos.md",
+      "knowledge-base/10_preguntas_abiertas.md"
+    ]
+  },
+  "roadmap": {
+    "created_by": "roadmap-generator",
+    "source": "CHANGES.md",
+    "changes_file": "CHANGES.md",
+    "changes": [
+      "C-01",
+      "C-02",
+      "C-03",
+      "C-04",
+      "C-05",
+      "C-06",
+      "C-07",
+      "C-08",
+      "C-09",
+      "C-10",
+      "C-11",
+      "C-12",
+      "C-13",
+      "C-14",
+      "C-15",
+      "C-16",
+      "C-17",
+      "C-18",
+      "C-19"
+    ]
+  },
   "foundation": {
     "version": 1,
     "order": [
@@ -16,7 +67,7 @@
     "phases": {
       "discovery": {
         "variant": "interview+competitors",
-        "status": "in_progress",
+        "status": "done",
         "requires": [],
         "outputs": [
           "docs/discovery/"
@@ -24,7 +75,7 @@
       },
       "kb": {
         "variant": "import",
-        "status": "pending",
+        "status": "done",
         "requires": [
           "discovery"
         ],
@@ -40,7 +91,7 @@
       },
       "roadmap": {
         "variant": "local-markdown",
-        "status": "pending",
+        "status": "done",
         "requires": [
           "kb"
         ],
