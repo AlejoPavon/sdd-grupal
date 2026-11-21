@@ -125,7 +125,7 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
 ## FASE 0 — Cimientos
 
 ### [C-01] `foundation-setup`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**: Scaffolding TypeScript + Node.js y servidor mínimo
   - `package.json` con scripts `dev`, `build`, `test`, `typecheck`, `lint`; ESM; Node.js 20+
   - `tsconfig.json` con `strict`, `noUncheckedIndexedAccess`, `paths` para `@/domain`, `@/application`, `@/infrastructure`
