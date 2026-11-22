@@ -144,7 +144,7 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
 ---
 
 ### [C-02] `core-domain-models`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**: Entidades, value objects, puertos y adaptadores en memoria
   - Modelos: `Paciente`, `Profesional`, `Sillon`, `Prestacion`, `Turno`, `Usuario`, `Sucursal`
   - Value objects: `Intervalo` con `seSuperpone(otro)` usando `inicio < otro.fin && fin > otro.inicio`; `EstadoTurno` con transiciones válidas
