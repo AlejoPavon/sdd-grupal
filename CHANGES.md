@@ -166,7 +166,7 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
 ## FASE 1 — Núcleo de agenda
 
 ### [C-03] `turno-creation`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (archivado 2026-11-22)
 - **Scope**: Caso de uso y endpoint de creación con doble validación de solapamiento
   - `POST /api/turnos` con body `{ pacienteId, profesionalId, sillonId, prestacionId, inicio }`
   - Schema Zod con fechas ISO 8601 y IDs UUID; rechazo `400` con detalle por campo
