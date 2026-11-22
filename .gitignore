@@ -26,3 +26,6 @@ data/
 
 # OpenCode local
 .opencode/
+
+# Active orchestrator (registry, not versioned)
+.atl/

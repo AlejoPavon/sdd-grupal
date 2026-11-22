@@ -37,9 +37,9 @@ Estado de avance del proceso de fundación del repositorio:
 | **1. Discovery & Investigación** | Completada | `docs/discovery/informe-discovery.md` (20 sistemas) | Equipo |
 | **2. Knowledge Base (KB)** | Completada | `knowledge-base/` (10 archivos canónicos + README) | Alejo Pavon |
 | **3. Roadmap** | Completada | `CHANGES.md` (19 changes, 8 fases) | Alejo Pavon |
-| **4. Task Management** | Pendiente | Tracking local en `.active-stack/roadmap.json` | Equipo |
-| **5. Find Skill & Registry** | Pendiente | `.atl/skill-registry.md` (skills instaladas y auditadas) | Equipo |
-| **6. Agent Instructions** | Pendiente | `AGENTS.md` / `CLAUDE.md` con reglas del agente | Equipo |
+| **4. Task Management** | Completada | Tracking local en `.active-stack/roadmap.json` | Equipo |
+| **5. Find Skill & Registry** | Completada | `.atl/skill-registry.md` (skills instaladas y auditadas) | Equipo |
+| **6. Agent Instructions** | Completada | `AGENTS.md` / `CLAUDE.md` con reglas del agente | Equipo |
 
 ### Reparto del equipo
 
