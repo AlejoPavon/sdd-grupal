@@ -224,7 +224,7 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
 ## FASE 2 — Pacientes
 
 ### [C-06] `pacientes-crud`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**: Gestión básica de pacientes
   - `POST /api/pacientes`, `GET /api/pacientes?q=`, `GET /api/pacientes/:id`, `PATCH /api/pacientes/:id`
   - `DELETE /api/pacientes/:id` como baja lógica (`activo = false`)
