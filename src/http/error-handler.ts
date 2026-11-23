@@ -8,6 +8,7 @@ import {
   RecursoNoEncontradoError,
   TurnoSolapadoError,
 } from "../domain/turno/turno.errors.js";
+import { PacienteDuplicadoError } from "../domain/paciente/paciente.errors.js";
 
 export function registrarErrorHandler(app: FastifyInstance): void {
   app.setErrorHandler((error, _request, reply) => {
@@ -59,6 +60,14 @@ export function registrarErrorHandler(app: FastifyInstance): void {
             fin: error.turnoEnConflicto.fin,
           },
         },
+      });
+    }
+
+    if (error instanceof PacienteDuplicadoError) {
+      return reply.status(409).send({
+        code: error.code,
+        message: error.message,
+        details: { campo: error.campo },
       });
     }
 
