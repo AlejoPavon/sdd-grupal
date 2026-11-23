@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 
+import { CancelarTurno } from "../../application/cancelar-turno.js";
 import { CrearTurno } from "../../application/crear-turno.js";
 import { ListarTurnos, ObtenerTurno } from "../../application/turnos/listar-turnos.js";
 import type { Repositorios } from "../../application/ports/repositorios.js";
@@ -39,6 +40,13 @@ export function registrarRutasTurnos(app: FastifyInstance, repos: Repositorios):
     const { id } = request.params as { id: string };
     const obtener = new ObtenerTurno(repos);
     const turno = await obtener.execute(id);
+    return reply.send(turno);
+  });
+
+  app.patch("/api/turnos/:id/cancelar", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const cancelar = new CancelarTurno(repos);
+    const turno = await cancelar.execute(id);
     return reply.send(turno);
   });
 }

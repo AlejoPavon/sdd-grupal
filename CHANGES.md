@@ -205,7 +205,7 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
 ---
 
 ### [C-05] `turno-cancellation`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (archivado 2026-11-23)
 - **Scope**: Cancelación y liberación de agenda
   - `PATCH /api/turnos/:id/cancelar` sin body
   - `CancelarTurno`: valida transición (`pendiente|confirmado → cancelado`), setea `cancelledAt`
