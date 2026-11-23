@@ -23,3 +23,7 @@ El MVP necesita gestionar pacientes (alta, búsqueda, baja lógica) para asignar
 
 - `src/application` (nuevos casos de uso de pacientes), `src/http/routes` (nueva ruta `/api/pacientes`), `src/http/schemas` (schema Zod), `src/http/server.ts` (registro), `src/application/crear-turno.ts` (check de activo), `src/infrastructure/persistence/in-memory-paciente-repository.ts` (filtro por activo en listar).
 - Sin cambios de persistencia (sigue en memoria) ni de autenticación. SQLite, auth y bloqueos de agenda quedan fuera de alcance.
+
+## Justificación de la elección
+
+Se eligió C-06 `pacientes-crud` porque la sección D.3 del informe de Discovery lista la gestión básica de pacientes (alta, edición y búsqueda) como funcionalidad imprescindible del MVP, y sin pacientes registrados no se pueden asignar turnos. Tiene reglas de negocio verificables, tomadas de la knowledge-base (RN-PA): unicidad de email y documento entre activos, baja lógica y bloqueo de turnos a pacientes inactivos, que se expresan como escenarios y se prueban con tests. Es una sola funcionalidad acotada, que depende solo de C-02, así que se puede terminar, probar y archivar sin esperar a otros changes.
