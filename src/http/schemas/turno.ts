@@ -6,6 +6,10 @@ export const crearTurnoSchema = z.object({
   sillonId: z.string().uuid(),
   prestacionId: z.string().uuid(),
   inicio: z.string().datetime(),
+  forzar: z.boolean().optional(),
+  // Opcional: ausente o `false` conservan las validaciones de C-07; `true` activa
+  // las omisiones controladas de sobreturno en CrearTurno (nunca sobre el sillón).
+  esSobreturno: z.boolean().optional(),
 });
 
 export type CrearTurnoBody = z.infer<typeof crearTurnoSchema>;

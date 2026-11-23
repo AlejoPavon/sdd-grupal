@@ -262,7 +262,7 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
 ---
 
 ### [C-08] `sobreturnos`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**: Sobreturnos controlados
   - Flag `esSobreturno` en `Turno` y parámetro opcional en `POST /api/turnos`
   - Permite solapamiento con el mismo profesional; nunca con el mismo sillón
