@@ -244,7 +244,7 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
 ## FASE 3 — Reglas avanzadas de agenda
 
 ### [C-07] `bloqueos-agenda`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**: Bloqueos por profesional o sillón
   - Modelo `Bloqueo` y repositorio en memoria
   - `POST /api/bloqueos`, `GET /api/bloqueos?desde&hasta`, `DELETE /api/bloqueos/:id`
