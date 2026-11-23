@@ -6,6 +6,7 @@ import {
   IntervaloInvalidoError,
   RecursoInactivoError,
   RecursoNoEncontradoError,
+  TransicionInvalidaError,
   TurnoSolapadoError,
 } from "../domain/turno/turno.errors.js";
 import { PacienteDuplicadoError } from "../domain/paciente/paciente.errors.js";
@@ -43,6 +44,14 @@ export function registrarErrorHandler(app: FastifyInstance): void {
 
     if (error instanceof IntervaloInvalidoError) {
       return reply.status(400).send({
+        code: error.code,
+        message: error.message,
+        details: {},
+      });
+    }
+
+    if (error instanceof TransicionInvalidaError) {
+      return reply.status(409).send({
         code: error.code,
         message: error.message,
         details: {},

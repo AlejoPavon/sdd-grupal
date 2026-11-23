@@ -7,8 +7,8 @@
 
 ## 2. Capa HTTP
 
-- [ ] 2.1 Agregar handler `PATCH /api/turnos/:id/cancelar` en `src/http/routes/turnos.ts` (sin body, usa `id` del path) y verificar `npm run typecheck`
-- [ ] 2.2 Mapear `TransicionInvalidaError` a `409` en `src/http/error-handler.ts` y verificar `npm run typecheck`
+- [x] 2.1 Agregar handler `PATCH /api/turnos/:id/cancelar` en `src/http/routes/turnos.ts` (sin body, usa `id` del path) y verificar `npm run typecheck`
+- [x] 2.2 Mapear `TransicionInvalidaError` a `409` en `src/http/error-handler.ts` y verificar `npm run typecheck`
 
 ## 3. Integración HTTP
 
