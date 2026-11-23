@@ -12,5 +12,5 @@
 
 ## 3. Integración HTTP
 
-- [ ] 3.1 Ampliar `tests/integration/turnos.test.ts` con casos de cancelación: feliz `200` con `cancelledAt`, doble cancelación idempotente, turno `atendido` → `409 TRANSICION_INVALIDA`, turno inexistente → `404`, recreación en el mismo horario tras cancelar, y verificar `npm test`
-- [ ] 3.2 Ejecutar `npm run typecheck` y `npm test` completos y verificar que pasan sin regresiones
+- [x] 3.1 Ampliar `tests/integration/turnos.test.ts` con casos de cancelación: feliz `200` con `cancelledAt`, doble cancelación idempotente, turno `atendido` → `409 TRANSICION_INVALIDA`, turno inexistente → `404`, recreación en el mismo horario tras cancelar, y verificar `npm test`
+- [x] 3.2 Ejecutar `npm run typecheck` y `npm test` completos y verificar que pasan sin regresiones

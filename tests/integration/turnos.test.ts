@@ -286,3 +286,94 @@ describe("GET /api/turnos", () => {
     expect(res.json().code).toBe("TURNO_NO_ENCONTRADO");
   });
 });
+
+describe("PATCH /api/turnos/:id/cancelar", () => {
+  let app: FastifyInstance;
+  let repos: Repositorios;
+
+  beforeEach(async () => {
+    repos = {
+      pacientes: new InMemoryPacienteRepository(),
+      profesionales: new InMemoryProfesionalRepository(),
+      sillones: new InMemorySillonRepository(),
+      prestaciones: new InMemoryPrestacionRepository(),
+      turnos: new InMemoryTurnoRepository(),
+      usuarios: new InMemoryUsuarioRepository(),
+    };
+    await cargarSeed(repos);
+    app = buildServer(repos);
+  });
+
+  const baseBody = () => ({
+    pacienteId: SEED_IDS.paciente1,
+    profesionalId: SEED_IDS.profesional1,
+    sillonId: SEED_IDS.sillon1,
+    prestacionId: SEED_IDS.consulta,
+    inicio: "2026-11-18T09:00:00.000Z",
+  });
+
+  async function crearTurno() {
+    const r = await app.inject({ method: "POST", url: "/api/turnos", payload: baseBody() });
+    return r.json().id as string;
+  }
+
+  it("cancela un turno pendiente y responde 200 con cancelledAt", async () => {
+    const id = await crearTurno();
+    const res = await app.inject({ method: "PATCH", url: `/api/turnos/${id}/cancelar` });
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.estado).toBe("cancelado");
+    expect(body.cancelledAt).toBeTruthy();
+    expect(body.updatedAt).toBeTruthy();
+  });
+
+  it("cancela un turno confirmado", async () => {
+    const id = await crearTurno();
+    const turno = await repos.turnos.buscarPorId(id);
+    await repos.turnos.actualizar({ ...turno!, estado: "confirmado" });
+
+    const res = await app.inject({ method: "PATCH", url: `/api/turnos/${id}/cancelar` });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().estado).toBe("cancelado");
+  });
+
+  it("doble cancelación es idempotente: no cambia cancelledAt/updatedAt", async () => {
+    const id = await crearTurno();
+    const r1 = await app.inject({ method: "PATCH", url: `/api/turnos/${id}/cancelar` });
+    const primera = r1.json();
+    const r2 = await app.inject({ method: "PATCH", url: `/api/turnos/${id}/cancelar` });
+    const segunda = r2.json();
+
+    expect(r2.statusCode).toBe(200);
+    expect(segunda.estado).toBe("cancelado");
+    expect(segunda.cancelledAt).toBe(primera.cancelledAt);
+    expect(segunda.updatedAt).toBe(primera.updatedAt);
+  });
+
+  it("turno atendido responde 409 TRANSICION_INVALIDA y no cambia estado", async () => {
+    const id = await crearTurno();
+    const turno = await repos.turnos.buscarPorId(id);
+    await repos.turnos.actualizar({ ...turno!, estado: "atendido" });
+
+    const res = await app.inject({ method: "PATCH", url: `/api/turnos/${id}/cancelar` });
+    expect(res.statusCode).toBe(409);
+    expect(res.json().code).toBe("TRANSICION_INVALIDA");
+
+    const persistido = await repos.turnos.buscarPorId(id);
+    expect(persistido!.estado).toBe("atendido");
+  });
+
+  it("turno inexistente responde 404 TURNO_NO_ENCONTRADO", async () => {
+    const res = await app.inject({ method: "PATCH", url: "/api/turnos/00000000-0000-4000-8000-000000000099/cancelar" });
+    expect(res.statusCode).toBe(404);
+    expect(res.json().code).toBe("TURNO_NO_ENCONTRADO");
+  });
+
+  it("permite recrear un turno en el mismo horario tras cancelar", async () => {
+    const id = await crearTurno();
+    await app.inject({ method: "PATCH", url: `/api/turnos/${id}/cancelar` });
+
+    const r2 = await app.inject({ method: "POST", url: "/api/turnos", payload: baseBody() });
+    expect(r2.statusCode).toBe(201);
+  });
+});
