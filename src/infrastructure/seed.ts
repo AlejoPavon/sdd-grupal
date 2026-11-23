@@ -2,6 +2,7 @@ import type { PacienteRepository } from "../application/ports/paciente-repositor
 import type { PrestacionRepository } from "../application/ports/prestacion-repository.js";
 import type { ProfesionalRepository } from "../application/ports/profesional-repository.js";
 import type { SillonRepository } from "../application/ports/sillon-repository.js";
+import { hashPassword } from "../application/auth/password.js";
 import type { UsuarioRepository } from "../application/ports/usuario-repository.js";
 import type { Paciente } from "../domain/paciente/paciente.js";
 import type { Prestacion } from "../domain/prestacion/prestacion.js";
@@ -29,8 +30,8 @@ export const SEED_IDS = {
   odonto1: "00000000-0000-4000-8000-000000000053",
 } as const;
 
-/** Hash de relleno: Javier lo reemplaza al implementar la autenticación (C-09). */
-export const PASSWORD_HASH_PLACEHOLDER = "cambiar-en-c-09";
+/** Password del seed, configurable para entornos demo (nunca para producción real). */
+export const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? "demo1234";
 
 const FECHA_SEED = new Date("2026-11-18T00:00:00.000Z");
 
@@ -79,35 +80,38 @@ const PACIENTES: Paciente[] = [
   { id: SEED_IDS.paciente3, nombre: "Paciente", apellido: "Demo Tres", activo: true, createdAt: FECHA_SEED, updatedAt: FECHA_SEED },
 ];
 
-const USUARIOS: Usuario[] = [
-  {
-    id: SEED_IDS.admin,
-    email: "admin@demo.local",
-    passwordHash: PASSWORD_HASH_PLACEHOLDER,
-    nombre: "Admin",
-    apellido: "Demo",
-    rol: "administrador",
-    activo: true,
-  },
-  {
-    id: SEED_IDS.recepcion,
-    email: "recepcion@demo.local",
-    passwordHash: PASSWORD_HASH_PLACEHOLDER,
-    nombre: "Recepción",
-    apellido: "Demo",
-    rol: "recepcionista",
-    activo: true,
-  },
-  {
-    id: SEED_IDS.odonto1,
-    email: "odonto1@demo.local",
-    passwordHash: PASSWORD_HASH_PLACEHOLDER,
-    nombre: "Ana",
-    apellido: "Demo",
-    rol: "profesional",
-    activo: true,
-  },
-];
+function usuariosSeed(passwordHash: string): Usuario[] {
+  return [
+    {
+      id: SEED_IDS.admin,
+      email: "admin@demo.local",
+      passwordHash,
+      nombre: "Admin",
+      apellido: "Demo",
+      rol: "administrador",
+      activo: true,
+    },
+    {
+      id: SEED_IDS.recepcion,
+      email: "recepcion@demo.local",
+      passwordHash,
+      nombre: "Recepción",
+      apellido: "Demo",
+      rol: "recepcionista",
+      activo: true,
+    },
+    {
+      id: SEED_IDS.odonto1,
+      email: "odonto1@demo.local",
+      passwordHash,
+      nombre: "Ana",
+      apellido: "Demo",
+      rol: "profesional",
+      activo: true,
+      profesionalId: SEED_IDS.profesional1,
+    },
+  ];
+}
 
 export interface RepositoriosSeed {
   sillones: SillonRepository;
@@ -122,5 +126,9 @@ export async function cargarSeed(repos: RepositoriosSeed): Promise<void> {
   for (const profesional of PROFESIONALES) await repos.profesionales.crear(profesional);
   for (const prestacion of PRESTACIONES) await repos.prestaciones.crear(prestacion);
   for (const paciente of PACIENTES) await repos.pacientes.crear(paciente);
-  for (const usuario of USUARIOS) await repos.usuarios.crear(usuario);
+
+  // Credenciales de desarrollo con datos ficticios (RN-SE-01/RN-SE-02): nunca usar en producción.
+  // Un único hash para los tres usuarios demo: se calcula una sola vez por seed.
+  const passwordHash = await hashPassword(DEMO_PASSWORD);
+  for (const usuario of usuariosSeed(passwordHash)) await repos.usuarios.crear(usuario);
 }

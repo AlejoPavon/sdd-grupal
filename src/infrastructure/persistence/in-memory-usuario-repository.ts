@@ -4,4 +4,12 @@ import { InMemoryRepositoryBase } from "./in-memory-repository-base.js";
 
 export class InMemoryUsuarioRepository
   extends InMemoryRepositoryBase<Usuario>
-  implements UsuarioRepository {}
+  implements UsuarioRepository
+{
+  async buscarPorEmail(email: string): Promise<Usuario | undefined> {
+    const normalizado = email.trim().toLowerCase();
+    return (await this.listar()).find(
+      (usuario) => usuario.email.trim().toLowerCase() === normalizado,
+    );
+  }
+}

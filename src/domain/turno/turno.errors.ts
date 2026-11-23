@@ -1,13 +1,8 @@
 import type { Turno } from "./turno.js";
+import { DominioError } from "../errors/dominio-error.js";
 
-export abstract class DominioError extends Error {
-  abstract readonly code: string;
-
-  constructor(message: string) {
-    super(message);
-    this.name = new.target.name;
-  }
-}
+// Se re-exporta para no romper los imports existentes de este módulo.
+export { DominioError };
 
 export class IntervaloInvalidoError extends DominioError {
   readonly code = "TURNO_INTERVALO_INVALIDO";

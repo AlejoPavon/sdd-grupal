@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyReply } from "fastify";
 import { ZodError } from "zod";
 
 import {
@@ -9,7 +9,27 @@ import {
   TransicionInvalidaError,
   TurnoSolapadoError,
 } from "../domain/turno/turno.errors.js";
+import {
+  BloqueoIntervaloInvalidoError,
+  BloqueoMotivoRequeridoError,
+  BloqueoNoEncontradoError,
+  BloqueoRecursoRequeridoError,
+  TurnoBloqueadoError,
+} from "../domain/bloqueo/bloqueo.errors.js";
 import { PacienteDuplicadoError } from "../domain/paciente/paciente.errors.js";
+import {
+  CredencialesInvalidasError,
+  NoAutenticadoError,
+  SinPermisoError,
+} from "../domain/usuario/usuario.errors.js";
+
+function responderDominio(reply: FastifyReply, status: number, error: DominioError) {
+  return reply.status(status).send({
+    code: error.code,
+    message: error.message,
+    details: error.details,
+  });
+}
 
 export function registrarErrorHandler(app: FastifyInstance): void {
   app.setErrorHandler((error, _request, reply) => {
@@ -80,12 +100,52 @@ export function registrarErrorHandler(app: FastifyInstance): void {
       });
     }
 
-    if (error instanceof DominioError) {
-      return reply.status(400).send({
+    // Bloqueos: códigos estables propios antes del genérico de DominioError.
+    if (error instanceof TurnoBloqueadoError) {
+      return reply.status(409).send({
         code: error.code,
         message: error.message,
-        details: {},
+        details: {
+          bloqueo: {
+            id: error.bloqueo.id,
+            inicio: error.bloqueo.inicio,
+            fin: error.bloqueo.fin,
+          },
+        },
       });
+    }
+
+    if (error instanceof BloqueoNoEncontradoError) {
+      return reply.status(404).send({
+        code: error.code,
+        message: error.message,
+        details: { id: error.id },
+      });
+    }
+
+    if (
+      error instanceof BloqueoIntervaloInvalidoError ||
+      error instanceof BloqueoRecursoRequeridoError ||
+      error instanceof BloqueoMotivoRequeridoError
+    ) {
+      return responderDominio(reply, 400, error);
+    }
+
+    // Ramas explícitas de autenticación: el genérico de DominioError es 400.
+    if (error instanceof CredencialesInvalidasError) {
+      return responderDominio(reply, 401, error);
+    }
+
+    if (error instanceof NoAutenticadoError) {
+      return responderDominio(reply, 401, error);
+    }
+
+    if (error instanceof SinPermisoError) {
+      return responderDominio(reply, 403, error);
+    }
+
+    if (error instanceof DominioError) {
+      return responderDominio(reply, 400, error);
     }
 
     const statusCode = (error as { statusCode?: number }).statusCode ?? 500;

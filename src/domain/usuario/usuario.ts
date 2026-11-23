@@ -8,4 +8,13 @@ export interface Usuario {
   apellido: string;
   rol: Rol;
   activo: boolean;
+  profesionalId?: string;
+}
+
+/** Identidad mínima adjunta a la request por el hook de autenticación. */
+export interface UsuarioAutenticado {
+  id: string;
+  email: string;
+  rol: Rol;
+  profesionalId?: string;
 }

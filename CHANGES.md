@@ -282,7 +282,7 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
 ## FASE 4 — Seguridad
 
 ### [C-09] `auth-rbac`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**: Autenticación y autorización por roles
   - Modelo `Usuario` con `passwordHash` (bcrypt/argon2) y rol
   - `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`

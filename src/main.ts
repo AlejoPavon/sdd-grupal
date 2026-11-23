@@ -1,9 +1,11 @@
 import "dotenv/config";
 
 import { buildServer } from "./http/server.js";
+import { InMemoryBloqueoRepository } from "./infrastructure/persistence/in-memory-bloqueo-repository.js";
 import { InMemoryPacienteRepository } from "./infrastructure/persistence/in-memory-paciente-repository.js";
 import { InMemoryPrestacionRepository } from "./infrastructure/persistence/in-memory-prestacion-repository.js";
 import { InMemoryProfesionalRepository } from "./infrastructure/persistence/in-memory-profesional-repository.js";
+import { InMemorySessionRepository } from "./infrastructure/persistence/in-memory-session-repository.js";
 import { InMemorySillonRepository } from "./infrastructure/persistence/in-memory-sillon-repository.js";
 import { InMemoryTurnoRepository } from "./infrastructure/persistence/in-memory-turno-repository.js";
 import { InMemoryUsuarioRepository } from "./infrastructure/persistence/in-memory-usuario-repository.js";
@@ -18,6 +20,8 @@ const repos = {
   prestaciones: new InMemoryPrestacionRepository(),
   turnos: new InMemoryTurnoRepository(),
   usuarios: new InMemoryUsuarioRepository(),
+  sesiones: new InMemorySessionRepository(),
+    bloqueos: new InMemoryBloqueoRepository(),
 };
 
 await cargarSeed(repos);

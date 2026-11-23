@@ -6,6 +6,8 @@ import {
   ListarSillones,
 } from "../../../src/application/catalogos/listar-catalogos.js";
 import type { Repositorios } from "../../../src/application/ports/repositorios.js";
+import { InMemoryBloqueoRepository } from "../../../src/infrastructure/persistence/in-memory-bloqueo-repository.js";
+import { InMemorySessionRepository } from "../../../src/infrastructure/persistence/in-memory-session-repository.js";
 import { InMemoryPacienteRepository } from "../../../src/infrastructure/persistence/in-memory-paciente-repository.js";
 import { InMemoryPrestacionRepository } from "../../../src/infrastructure/persistence/in-memory-prestacion-repository.js";
 import { InMemoryProfesionalRepository } from "../../../src/infrastructure/persistence/in-memory-profesional-repository.js";
@@ -24,6 +26,8 @@ describe("catalogos", () => {
       prestaciones: new InMemoryPrestacionRepository(),
       turnos: new InMemoryTurnoRepository(),
       usuarios: new InMemoryUsuarioRepository(),
+      sesiones: new InMemorySessionRepository(),
+      bloqueos: new InMemoryBloqueoRepository(),
     };
     await cargarSeed(repos);
   });

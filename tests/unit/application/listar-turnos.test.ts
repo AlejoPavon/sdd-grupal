@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { ListarTurnos, ObtenerTurno } from "../../../src/application/turnos/listar-turnos.js";
 import type { Repositorios } from "../../../src/application/ports/repositorios.js";
+import { InMemoryBloqueoRepository } from "../../../src/infrastructure/persistence/in-memory-bloqueo-repository.js";
+import { InMemorySessionRepository } from "../../../src/infrastructure/persistence/in-memory-session-repository.js";
 import { InMemoryPacienteRepository } from "../../../src/infrastructure/persistence/in-memory-paciente-repository.js";
 import { InMemoryPrestacionRepository } from "../../../src/infrastructure/persistence/in-memory-prestacion-repository.js";
 import { InMemoryProfesionalRepository } from "../../../src/infrastructure/persistence/in-memory-profesional-repository.js";
@@ -23,6 +25,8 @@ describe("ListarTurnos", () => {
       prestaciones: new InMemoryPrestacionRepository(),
       turnos: new InMemoryTurnoRepository(),
       usuarios: new InMemoryUsuarioRepository(),
+      sesiones: new InMemorySessionRepository(),
+      bloqueos: new InMemoryBloqueoRepository(),
     };
     await cargarSeed(repos);
   });
@@ -124,6 +128,8 @@ describe("ObtenerTurno", () => {
       prestaciones: new InMemoryPrestacionRepository(),
       turnos: new InMemoryTurnoRepository(),
       usuarios: new InMemoryUsuarioRepository(),
+      sesiones: new InMemorySessionRepository(),
+      bloqueos: new InMemoryBloqueoRepository(),
     };
     await cargarSeed(repos);
   });
