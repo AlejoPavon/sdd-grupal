@@ -186,7 +186,7 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
 ---
 
 ### [C-04] `agenda-queries`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (archivado 2026-11-23)
 - **Scope**: Consulta de turnos y agenda
   - `GET /api/turnos?desde&hasta&profesionalId&sillonId` con validación de rango (`400 RANGO_INVALIDO`)
   - `GET /api/turnos/:id` con `404` tipado

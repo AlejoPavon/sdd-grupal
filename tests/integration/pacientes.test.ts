@@ -77,7 +77,7 @@ describe("Pacientes CRUD", () => {
     await app.inject({ method: "POST", url: "/api/pacientes", payload: { nombre: "Ana", apellido: "Demo" } });
     const res = await app.inject({ method: "GET", url: "/api/pacientes?q=dEm" });
     expect(res.statusCode).toBe(200);
-    expect(res.json().some((p: any) => p.apellido === "Demo")).toBe(true);
+    expect(res.json().some((p: { apellido: string }) => p.apellido === "Demo")).toBe(true);
   });
 
   it("búsqueda no devuelve inactivos", async () => {
@@ -93,7 +93,7 @@ describe("Pacientes CRUD", () => {
     await app.inject({ method: "DELETE", url: `/api/pacientes/${r.json().id}` });
     await app.inject({ method: "POST", url: "/api/pacientes", payload: { nombre: "Activo", apellido: "Y" } });
     const res = await app.inject({ method: "GET", url: "/api/pacientes" });
-    expect(res.json().every((p: any) => p.activo === true)).toBe(true);
+    expect(res.json().every((p: { activo: boolean }) => p.activo === true)).toBe(true);
   });
 
   it("GET /:id existente", async () => {
@@ -118,7 +118,7 @@ describe("Pacientes CRUD", () => {
     const get = await app.inject({ method: "GET", url: `/api/pacientes/${id}` });
     expect(get.json().activo).toBe(false);
     const list = await app.inject({ method: "GET", url: "/api/pacientes" });
-    expect(list.json().some((p: any) => p.id === id)).toBe(false);
+    expect(list.json().some((p: { id: string }) => p.id === id)).toBe(false);
   });
 
   it("DELETE ya inactivo → 200 idempotente", async () => {
@@ -137,7 +137,7 @@ describe("Pacientes CRUD", () => {
 
   it("PATCH con email de otro activo → 409", async () => {
     const a = await app.inject({ method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B", email: "a@demo.local" } });
-    const b = await app.inject({ method: "POST", url: "/api/pacientes", payload: { nombre: "C", apellido: "D", email: "b@demo.local" } });
+    await app.inject({ method: "POST", url: "/api/pacientes", payload: { nombre: "C", apellido: "D", email: "b@demo.local" } });
     const res = await app.inject({ method: "PATCH", url: `/api/pacientes/${a.json().id}`, payload: { email: "b@demo.local" } });
     expect(res.statusCode).toBe(409);
     expect(res.json().code).toBe("PACIENTE_DUPLICADO");
@@ -178,7 +178,7 @@ describe("Pacientes CRUD", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    await repos.pacientes.crear(inactivo as any);
+    await repos.pacientes.crear(inactivo as never);
     const res = await app.inject({ method: "PATCH", url: `/api/pacientes/${inactivo.id}`, payload: { activo: true } });
     expect(res.statusCode).toBe(409);
     expect(res.json().code).toBe("PACIENTE_DUPLICADO");
@@ -196,7 +196,7 @@ describe("Pacientes CRUD", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    await repos.pacientes.crear(inactivo as any);
+    await repos.pacientes.crear(inactivo as never);
     const res = await app.inject({ method: "PATCH", url: `/api/pacientes/${inactivo.id}`, payload: { activo: true } });
     expect(res.statusCode).toBe(409);
     expect(res.json().code).toBe("PACIENTE_DUPLICADO");
