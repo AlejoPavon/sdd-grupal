@@ -103,11 +103,24 @@ describe("InMemoryPacienteRepository", () => {
       expect(resultado.map((p) => p.id)).toEqual([alfaAna.id, alfaBruno.id, zetaAna.id]);
     });
 
-    it("sin texto devuelve todos, incluidos los inactivos", async () => {
-      await repo.crear(crearPaciente());
-      await repo.crear(crearPaciente({ activo: false }));
-      expect(await repo.listar()).toHaveLength(2);
+    it("sin texto devuelve solo los pacientes activos", async () => {
+  const activo = crearPaciente();
+  await repo.crear(activo);
+  await repo.crear(crearPaciente({ activo: false }));
+
+  const resultado = await repo.listar();
+
+  expect(resultado.map((p) => p.id)).toEqual([activo.id]);
     });
+    it("con texto no devuelve pacientes inactivos", async () => {
+  await repo.crear(crearPaciente({ apellido: "Demo" }));
+  await repo.crear(crearPaciente({ apellido: "Oculto", activo: false }));
+
+  const resultado = await repo.listar("oc");
+
+  expect(resultado).toEqual([]);
+     });
+    
   });
 
   describe("actualizar", () => {

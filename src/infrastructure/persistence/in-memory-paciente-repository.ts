@@ -30,19 +30,19 @@ export class InMemoryPacienteRepository
   }
 
   override async listar(q?: string): Promise<Paciente[]> {
-    const texto = q?.trim().toLowerCase();
-    const todos = [...this.items.values()];
-    const filtrados = texto
-      ? todos.filter((p) =>
-          [p.apellido, p.nombre, p.telefono, p.documento].some((campo) =>
-            campo?.toLowerCase().includes(texto),
-          ),
-        )
-      : todos;
-    return filtrados
-      .sort((a, b) => a.apellido.localeCompare(b.apellido) || a.nombre.localeCompare(b.nombre))
-      .map((p) => ({ ...p }));
-  }
+  const texto = q?.trim().toLowerCase();
+  const activos = [...this.items.values()].filter((p) => p.activo);
+  const filtrados = texto
+    ? activos.filter((p) =>
+        [p.apellido, p.nombre, p.telefono, p.documento].some((campo) =>
+          campo?.toLowerCase().includes(texto),
+        ),
+      )
+    : activos;
+  return filtrados
+    .sort((a, b) => a.apellido.localeCompare(b.apellido) || a.nombre.localeCompare(b.nombre))
+    .map((p) => ({ ...p }));
+}
 
   async actualizar(paciente: Paciente): Promise<Paciente> {
     if (!this.items.has(paciente.id)) {

@@ -26,6 +26,9 @@ export class CrearTurno {
     if (!paciente) {
       throw new RecursoNoEncontradoError("paciente", input.pacienteId);
     }
+    if (!paciente.activo) {
+      throw new RecursoInactivoError("paciente", input.pacienteId);
+    }
 
     const profesional = await this.repos.profesionales.buscarPorId(input.profesionalId);
     if (!profesional) {
