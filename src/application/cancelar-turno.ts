@@ -1,5 +1,4 @@
 import type { TurnoRepository } from "./ports/turno-repository.js";
-
 import type { Turno } from "../domain/turno/turno.js";
 import { puedeTransicionarA } from "../domain/turno/estado-turno.js";
 import {
