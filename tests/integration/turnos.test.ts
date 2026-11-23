@@ -171,3 +171,118 @@ describe("POST /api/turnos", () => {
     expect(turnos).toHaveLength(1);
   });
 });
+
+describe("GET /api/turnos", () => {
+  let app: FastifyInstance;
+  let repos: Repositorios;
+
+  beforeEach(async () => {
+    repos = {
+      pacientes: new InMemoryPacienteRepository(),
+      profesionales: new InMemoryProfesionalRepository(),
+      sillones: new InMemorySillonRepository(),
+      prestaciones: new InMemoryPrestacionRepository(),
+      turnos: new InMemoryTurnoRepository(),
+      usuarios: new InMemoryUsuarioRepository(),
+    };
+    await cargarSeed(repos);
+    app = buildServer(repos);
+  });
+
+  async function crearTurno(body: Record<string, unknown>) {
+    return app.inject({ method: "POST", url: "/api/turnos", payload: body });
+  }
+
+  const baseBody = () => ({
+    pacienteId: SEED_IDS.paciente1,
+    profesionalId: SEED_IDS.profesional1,
+    sillonId: SEED_IDS.sillon1,
+    prestacionId: SEED_IDS.consulta,
+    inicio: "2026-11-18T09:00:00.000Z",
+  });
+
+  it("lista turnos por rango, ordenados por inicio", async () => {
+    await crearTurno(baseBody());
+    await crearTurno({ ...baseBody(), pacienteId: SEED_IDS.paciente2, inicio: "2026-11-18T11:00:00.000Z" });
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/turnos?desde=2026-11-18T08:00:00.000Z&hasta=2026-11-18T12:00:00.000Z",
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body).toHaveLength(2);
+    expect(new Date(body[0].inicio).getTime()).toBeLessThan(new Date(body[1].inicio).getTime());
+  });
+
+  it("filtra combinado por profesional y sillón", async () => {
+    await crearTurno(baseBody());
+    const segundo = {
+      pacienteId: SEED_IDS.paciente2,
+      profesionalId: SEED_IDS.profesional2,
+      sillonId: SEED_IDS.sillon2,
+      prestacionId: SEED_IDS.consulta,
+      inicio: "2026-11-18T09:00:00.000Z",
+    };
+    await crearTurno(segundo);
+
+    const res = await app.inject({
+      method: "GET",
+      url: `/api/turnos?profesionalId=${SEED_IDS.profesional1}&sillonId=${SEED_IDS.sillon1}`,
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body).toHaveLength(1);
+    expect(body[0].profesionalId).toBe(SEED_IDS.profesional1);
+    expect(body[0].sillonId).toBe(SEED_IDS.sillon1);
+  });
+
+  it("rango inválido responde 400 RANGO_INVALIDO", async () => {
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/turnos?desde=2026-11-18T12:00:00.000Z&hasta=2026-11-18T08:00:00.000Z",
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().code).toBe("RANGO_INVALIDO");
+  });
+
+  it("excluye turnos cancelados", async () => {
+    const r = await crearTurno(baseBody());
+    const id = r.json().id;
+    const turno = await repos.turnos.buscarPorId(id);
+    await repos.turnos.actualizar({ ...turno!, estado: "cancelado" });
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/turnos?desde=2026-11-18T08:00:00.000Z&hasta=2026-11-18T12:00:00.000Z",
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toHaveLength(0);
+  });
+
+  it("enriquece respuesta con paciente y prestacion", async () => {
+    await crearTurno(baseBody());
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/turnos?desde=2026-11-18T08:00:00.000Z&hasta=2026-11-18T12:00:00.000Z",
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body[0].paciente).toMatchObject({ id: SEED_IDS.paciente1, nombre: "Paciente", apellido: "Demo Uno" });
+    expect(body[0].prestacion).toMatchObject({ id: SEED_IDS.consulta, codigo: "CONSULTA", nombre: "Consulta", duracionMinutos: 30 });
+  });
+
+  it("GET /api/turnos/:id existente responde 200", async () => {
+    const r = await crearTurno(baseBody());
+    const id = r.json().id;
+    const res = await app.inject({ method: "GET", url: `/api/turnos/${id}` });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().id).toBe(id);
+  });
+
+  it("GET /api/turnos/:id inexistente responde 404 TURNO_NO_ENCONTRADO", async () => {
+    const res = await app.inject({ method: "GET", url: "/api/turnos/00000000-0000-4000-8000-000000000099" });
+    expect(res.statusCode).toBe(404);
+    expect(res.json().code).toBe("TURNO_NO_ENCONTRADO");
+  });
+});

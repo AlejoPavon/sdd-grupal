@@ -9,3 +9,12 @@ export const crearTurnoSchema = z.object({
 });
 
 export type CrearTurnoBody = z.infer<typeof crearTurnoSchema>;
+
+export const turnoQuerySchema = z.object({
+  desde: z.string().datetime().optional(),
+  hasta: z.string().datetime().optional(),
+  profesionalId: z.string().uuid().optional(),
+  sillonId: z.string().uuid().optional(),
+});
+
+export type TurnoQuery = z.infer<typeof turnoQuerySchema>;

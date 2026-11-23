@@ -75,3 +75,10 @@ export class TransicionInvalidaError extends DominioError {
     super(`No se puede pasar un turno de ${desde} a ${hacia}`);
   }
 }
+
+export class RangoInvalidoError extends DominioError {
+  readonly code = "RANGO_INVALIDO";
+  constructor() {
+    super("El rango de consulta es inválido: 'desde' debe ser menor que 'hasta'");
+  }
+}
