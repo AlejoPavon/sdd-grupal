@@ -8,6 +8,7 @@ import { InMemoryTurnoRepository } from "../infrastructure/persistence/in-memory
 import { InMemoryUsuarioRepository } from "../infrastructure/persistence/in-memory-usuario-repository.js";
 import type { Repositorios } from "../application/ports/repositorios.js";
 import { registrarErrorHandler } from "./error-handler.js";
+import { registrarRutasPacientes } from "./routes/pacientes.js";
 import { registrarRutasTurnos } from "./routes/turnos.js";
 
 export function buildServer(repos?: Repositorios): FastifyInstance {
@@ -25,6 +26,7 @@ export function buildServer(repos?: Repositorios): FastifyInstance {
   app.get("/health", async () => ({ status: "ok" }));
 
   registrarErrorHandler(app);
+  registrarRutasPacientes(app, repositorios);
   registrarRutasTurnos(app, repositorios);
 
   return app;
