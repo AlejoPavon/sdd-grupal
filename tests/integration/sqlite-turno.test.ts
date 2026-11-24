@@ -92,4 +92,52 @@ describe("sqlite turno repository", () => {
     db1.close(); db2.close();
     db = null;
   });
+
+  it("sobreturno del mismo profesional permitido", async () => {
+    dir = mkdtempSync(path.join(tmpdir(), "turno-"));
+    db = crearConexion(`file:${path.join(dir, "t.db")}`);
+    runMigrations(db);
+    seed(db);
+    const repo = new SqliteTurnoRepository(db);
+    const now = new Date();
+    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    await repo.crear(t1);
+    const t2 = { id: "t2", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:15:00Z"), fin: new Date("2026-01-01T09:45:00Z"), estado: "pendiente" as any, esSobreturno: true, autorizadoPor: "u1", createdBy: "u1", createdAt: now, updatedAt: now };
+    // sillón libre: usar otro sillón
+    db.prepare("INSERT INTO sillon(id,nombre,sucursal_id,activo) VALUES (?,?,?,?)").run("sil2", "S2", "suc", 1);
+    t2.sillonId = "sil2";
+    const created = await repo.crear(t2);
+    expect(created.esSobreturno).toBe(true);
+    expect(created.autorizadoPor).toBe("u1");
+  });
+
+  it("turno contiguo permitido", async () => {
+    dir = mkdtempSync(path.join(tmpdir(), "turno-"));
+    db = crearConexion(`file:${path.join(dir, "t.db")}`);
+    runMigrations(db);
+    seed(db);
+    const repo = new SqliteTurnoRepository(db);
+    const now = new Date();
+    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    await repo.crear(t1);
+    const t2 = { ...t1, id: "t2", inicio: new Date("2026-01-01T09:30:00Z"), fin: new Date("2026-01-01T10:00:00Z") };
+    await expect(repo.crear(t2)).resolves.toBeTruthy();
+  });
+
+  it("turno cancelado no bloquea", async () => {
+    dir = mkdtempSync(path.join(tmpdir(), "turno-"));
+    db = crearConexion(`file:${path.join(dir, "t.db")}`);
+    runMigrations(db);
+    seed(db);
+    const repo = new SqliteTurnoRepository(db);
+    const now = new Date();
+    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    await repo.crear(t1);
+    const cancelled = { ...t1, estado: "cancelado" as any, cancelledAt: new Date(), updatedAt: new Date() };
+    await repo.actualizar(cancelled);
+    const sol = await repo.buscarSolapadoPorProfesional("prof1", new Intervalo(new Date("2026-01-01T09:00:00Z"), new Date("2026-01-01T09:30:00Z")));
+    expect(sol).toHaveLength(0);
+    const t2 = { ...t1, id: "t2" };
+    await expect(repo.crear(t2)).resolves.toBeTruthy();
+  });
 });
