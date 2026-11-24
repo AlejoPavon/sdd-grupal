@@ -31,7 +31,7 @@ export class SqliteBloqueoRepository implements BloqueoRepository {
   }
 
   async listar(filtros?: FiltrosBloqueo): Promise<Bloqueo[]> {
-    const rows = this.db.prepare("SELECT * FROM bloqueo").all() as any[];
+    const rows = this.db.prepare("SELECT * FROM bloqueo ORDER BY inicio, rowid").all() as any[];
     let res = rows.map(map);
     if (filtros?.desde) res = res.filter((b) => b.fin > filtros.desde!);
     if (filtros?.hasta) res = res.filter((b) => b.inicio < filtros.hasta!);
