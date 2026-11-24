@@ -37,6 +37,9 @@ describe("sqlite turno repository", () => {
     runMigrations(db2);
     const repo2 = new SqliteTurnoRepository(db2);
     const found = await repo2.buscarPorId("t1");
+    expect(found?.inicio).toEqual(new Date("2026-01-01T09:00:00Z"));
+    expect(found?.fin).toEqual(new Date("2026-01-01T09:30:00Z"));
+    expect(found?.esSobreturno).toBe(false);
     expect(found?.notas).toBe("n");
     expect(found?.autorizadoPor).toBe("u2");
     db2.close();
@@ -53,7 +56,7 @@ describe("sqlite turno repository", () => {
     const t1 = { id:"t1", pacienteId:"pac1", profesionalId:"prof1", sillonId:"sil1", prestacionId:"pre1", inicio:new Date("2026-01-01T09:00:00Z"), fin:new Date("2026-01-01T09:30:00Z"), estado:"pendiente" as any, esSobreturno:false, createdBy:"u1", createdAt:now, updatedAt:now };
     await repo.crear(t1);
     const t2 = { ...t1, id:"t2", inicio:new Date("2026-01-01T09:15:00Z"), fin:new Date("2026-01-01T09:45:00Z"), sillonId:"sil1" };
-    await expect(repo.crear(t2)).rejects.toBeTruthy();
+    await expect(repo.crear(t2)).rejects.toMatchObject({ code: "TURNO_SOLAPADO_PROFESIONAL" });
   });
 
   it("sobreturno en sillon ocupado lanza por sillon", async () => {
@@ -66,7 +69,7 @@ describe("sqlite turno repository", () => {
     const t1 = { id:"t1", pacienteId:"pac1", profesionalId:"prof1", sillonId:"sil1", prestacionId:"pre1", inicio:new Date("2026-01-01T09:00:00Z"), fin:new Date("2026-01-01T09:30:00Z"), estado:"pendiente" as any, esSobreturno:false, createdBy:"u1", createdAt:now, updatedAt:now };
     await repo.crear(t1);
     const t2 = { id:"t2", pacienteId:"pac1", profesionalId:"prof1", sillonId:"sil1", prestacionId:"pre1", inicio:new Date("2026-01-01T09:15:00Z"), fin:new Date("2026-01-01T09:45:00Z"), estado:"pendiente" as any, esSobreturno:true, autorizadoPor:"u1", createdBy:"u1", createdAt:now, updatedAt:now };
-    await expect(repo.crear(t2)).rejects.toBeTruthy();
+    await expect(repo.crear(t2)).rejects.toMatchObject({ code: "TURNO_SOLAPADO_SILLON" });
   });
 
   it("doble reserva con dos conexiones", async () => {
