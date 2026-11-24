@@ -303,7 +303,7 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
 ## FASE 5 — Persistencia
 
 ### [C-10] `sqlite-persistence`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**: Adaptador SQLite y migraciones
   - Dependencia `better-sqlite3` (o `node:sqlite` si la versión de Node lo soporta)
   - Migración 001: `sucursal`, `usuario`, `profesional`, `sillon`, `prestacion`, `paciente`, `turno`, `bloqueo`
