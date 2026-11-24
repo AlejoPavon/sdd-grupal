@@ -66,13 +66,13 @@ export class SqliteTurnoRepository implements TurnoRepository {
   }
 
   async listar(filtros?: FiltrosTurno): Promise<Turno[]> {
-    const rows = this.db.prepare("SELECT * FROM turno").all() as any[];
+    const rows = this.db.prepare("SELECT * FROM turno ORDER BY inicio, rowid").all() as any[];
     let res = rows.map(map);
     if (filtros?.profesionalId) res = res.filter((t) => t.profesionalId === filtros.profesionalId);
     if (filtros?.sillonId) res = res.filter((t) => t.sillonId === filtros.sillonId);
     if (filtros?.desde) res = res.filter((t) => t.fin.getTime() > filtros.desde!.getTime());
     if (filtros?.hasta) res = res.filter((t) => t.inicio.getTime() < filtros.hasta!.getTime());
-    if (filtros?.estados?.length) res = res.filter((t) => filtros.estados!.includes(t.estado));
+    if (filtros?.estados) res = res.filter((t) => filtros.estados!.includes(t.estado));
     return res.sort((a, b) => a.inicio.getTime() - b.inicio.getTime());
   }
 
@@ -80,6 +80,7 @@ export class SqliteTurnoRepository implements TurnoRepository {
     const rows = this.db.prepare("SELECT * FROM turno WHERE profesional_id = ?").all(profesionalId) as any[];
     return rows
       .map(map)
+      .filter((t) => ocupaAgenda(t.estado))
       .filter((t) => t.inicio.getTime() < intervalo.fin.getTime() && t.fin.getTime() > intervalo.inicio.getTime())
       .filter((t) => (excluirId ? t.id !== excluirId : true));
   }
@@ -88,6 +89,7 @@ export class SqliteTurnoRepository implements TurnoRepository {
     const rows = this.db.prepare("SELECT * FROM turno WHERE sillon_id = ?").all(sillonId) as any[];
     return rows
       .map(map)
+      .filter((t) => ocupaAgenda(t.estado))
       .filter((t) => t.inicio.getTime() < intervalo.fin.getTime() && t.fin.getTime() > intervalo.inicio.getTime())
       .filter((t) => (excluirId ? t.id !== excluirId : true));
   }
