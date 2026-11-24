@@ -2,30 +2,35 @@ import type Database from "better-sqlite3";
 import type { PacienteRepository } from "../../../application/ports/paciente-repository.js";
 import type { Paciente } from "../../../domain/paciente/paciente.js";
 import { RecursoNoEncontradoError } from "../../../domain/turno/turno.errors.js";
+import { PacienteDuplicadoError } from "../../../domain/paciente/paciente.errors.js";
 
 export class SqlitePacienteRepository implements PacienteRepository {
   constructor(private readonly db: Database.Database) {}
 
   async crear(paciente: Paciente): Promise<Paciente> {
-    this.db
-      .prepare(
-        `INSERT INTO paciente(id, nombre, apellido, documento, telefono, email, fecha_nacimiento, notas, activo, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run(
-        paciente.id,
-        paciente.nombre,
-        paciente.apellido,
-        paciente.documento ?? null,
-        paciente.telefono ?? null,
-        paciente.email ?? null,
-        paciente.fechaNacimiento ? paciente.fechaNacimiento.toISOString() : null,
-        paciente.notas ?? null,
-        paciente.activo ? 1 : 0,
-        paciente.createdAt.getTime(),
-        paciente.updatedAt.getTime()
-      );
-    return paciente;
+    try {
+      this.db
+        .prepare(
+          `INSERT INTO paciente(id, nombre, apellido, documento, telefono, email, fecha_nacimiento, notas, activo, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+        .run(
+          paciente.id,
+          paciente.nombre,
+          paciente.apellido,
+          paciente.documento ?? null,
+          paciente.telefono ?? null,
+          paciente.email ?? null,
+          paciente.fechaNacimiento ? paciente.fechaNacimiento.toISOString() : null,
+          paciente.notas ?? null,
+          paciente.activo ? 1 : 0,
+          paciente.createdAt.getTime(),
+          paciente.updatedAt.getTime()
+        );
+      return paciente;
+    } catch (e: any) {
+      throw mapUniqueError(e);
+    }
   }
 
   async buscarPorId(id: string): Promise<Paciente | undefined> {
@@ -71,24 +76,41 @@ export class SqlitePacienteRepository implements PacienteRepository {
   async actualizar(paciente: Paciente): Promise<Paciente> {
     const exists = this.db.prepare("SELECT id FROM paciente WHERE id = ?").get(paciente.id);
     if (!exists) throw new RecursoNoEncontradoError("paciente", paciente.id);
-    this.db
-      .prepare(
-        `UPDATE paciente SET nombre=?, apellido=?, documento=?, telefono=?, email=?, fecha_nacimiento=?, notas=?, activo=?, updated_at=? WHERE id=?`
-      )
-      .run(
-        paciente.nombre,
-        paciente.apellido,
-        paciente.documento ?? null,
-        paciente.telefono ?? null,
-        paciente.email ?? null,
-        paciente.fechaNacimiento ? paciente.fechaNacimiento.toISOString() : null,
-        paciente.notas ?? null,
-        paciente.activo ? 1 : 0,
-        paciente.updatedAt.getTime(),
-        paciente.id
-      );
-    return paciente;
+    try {
+      this.db
+        .prepare(
+          `UPDATE paciente SET nombre=?, apellido=?, documento=?, telefono=?, email=?, fecha_nacimiento=?, notas=?, activo=?, updated_at=? WHERE id=?`
+        )
+        .run(
+          paciente.nombre,
+          paciente.apellido,
+          paciente.documento ?? null,
+          paciente.telefono ?? null,
+          paciente.email ?? null,
+          paciente.fechaNacimiento ? paciente.fechaNacimiento.toISOString() : null,
+          paciente.notas ?? null,
+          paciente.activo ? 1 : 0,
+          paciente.updatedAt.getTime(),
+          paciente.id
+        );
+      return paciente;
+    } catch (e: any) {
+      throw mapUniqueError(e);
+    }
   }
+}
+
+function mapUniqueError(e: any): unknown {
+  const msg = String(e?.message ?? "");
+  const esUnico = e?.code === "SQLITE_CONSTRAINT_UNIQUE" || msg.includes("UNIQUE constraint failed");
+  if (!esUnico) return e;
+  if (msg.includes("idx_paciente_email_activo") || msg.includes("paciente.email")) {
+    return new PacienteDuplicadoError("email");
+  }
+  if (msg.includes("idx_paciente_documento_activo") || msg.includes("paciente.documento")) {
+    return new PacienteDuplicadoError("documento");
+  }
+  return e;
 }
 
 function map(row: any): Paciente {

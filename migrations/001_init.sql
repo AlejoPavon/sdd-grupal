@@ -5,11 +5,11 @@ CREATE TABLE IF NOT EXISTS sucursal (
 
 CREATE TABLE IF NOT EXISTS usuario (
   id TEXT PRIMARY KEY,
-  email TEXT NOT NULL UNIQUE,
+  email TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   nombre TEXT NOT NULL,
   apellido TEXT NOT NULL,
-  rol TEXT NOT NULL,
+  rol TEXT NOT NULL CHECK (rol IN ('administrador','recepcionista','profesional')),
   profesional_id TEXT,
   activo INTEGER NOT NULL DEFAULT 1,
   FOREIGN KEY (profesional_id) REFERENCES profesional(id) ON DELETE SET NULL
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS turno (
   es_sobreturno INTEGER NOT NULL DEFAULT 0,
   notas TEXT,
   autorizado_por TEXT,
-  created_by TEXT,
+  created_by TEXT NOT NULL,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   cancelled_at INTEGER,
@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS bloqueo (
   motivo TEXT NOT NULL,
   creado_por TEXT NOT NULL,
   created_at INTEGER NOT NULL,
+  CHECK (profesional_id IS NOT NULL OR sillon_id IS NOT NULL),
   FOREIGN KEY (profesional_id) REFERENCES profesional(id) ON DELETE RESTRICT,
   FOREIGN KEY (sillon_id) REFERENCES sillon(id) ON DELETE RESTRICT
 );
