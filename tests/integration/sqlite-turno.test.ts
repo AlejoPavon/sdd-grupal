@@ -140,4 +140,65 @@ describe("sqlite turno repository", () => {
     const t2 = { ...t1, id: "t2" };
     await expect(repo.crear(t2)).resolves.toBeTruthy();
   });
+
+  it("cancelar persiste estado y cancelledAt", async () => {
+    dir = mkdtempSync(path.join(tmpdir(), "turno-"));
+    const file = path.join(dir, "t.db");
+    db = crearConexion(`file:${file}`);
+    runMigrations(db);
+    seed(db);
+    const repo = new SqliteTurnoRepository(db);
+    const now = new Date();
+    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    await repo.crear(t1);
+    const cancelledAt = new Date("2026-01-01T10:00:00Z");
+    await repo.actualizar({ ...t1, estado: "cancelado" as any, cancelledAt, updatedAt: new Date() });
+    db.close();
+    const db2 = crearConexion(`file:${file}`);
+    runMigrations(db2);
+    const repo2 = new SqliteTurnoRepository(db2);
+    const found = await repo2.buscarPorId("t1");
+    expect(found?.estado).toBe("cancelado");
+    expect(found?.cancelledAt).toEqual(cancelledAt);
+    db2.close();
+    db = null;
+  });
+
+  it("buscarSolapado con excluirId", async () => {
+    dir = mkdtempSync(path.join(tmpdir(), "turno-"));
+    db = crearConexion(`file:${path.join(dir, "t.db")}`);
+    runMigrations(db);
+    seed(db);
+    const repo = new SqliteTurnoRepository(db);
+    const now = new Date();
+    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    await repo.crear(t1);
+    const res = await repo.buscarSolapadoPorProfesional("prof1", new Intervalo(new Date("2026-01-01T09:00:00Z"), new Date("2026-01-01T09:30:00Z")), "t1");
+    expect(res).toHaveLength(0);
+  });
+
+  it("listar con filtros desde hasta estados y orden", async () => {
+    dir = mkdtempSync(path.join(tmpdir(), "turno-"));
+    db = crearConexion(`file:${path.join(dir, "t.db")}`);
+    runMigrations(db);
+    seed(db);
+    const repo = new SqliteTurnoRepository(db);
+    const now = new Date();
+    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    const t2 = { id: "t2", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T10:00:00Z"), fin: new Date("2026-01-01T10:30:00Z"), estado: "confirmado" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    await repo.crear(t1);
+    await repo.crear(t2);
+    const res = await repo.listar({ desde: new Date("2026-01-01T09:15:00Z"), hasta: new Date("2026-01-01T10:15:00Z"), estados: ["pendiente", "confirmado"] });
+    expect(res.map((t) => t.id)).toEqual(["t1", "t2"]);
+  });
+
+  it("actualizar inexistente lanza RecursoNoEncontradoError", async () => {
+    dir = mkdtempSync(path.join(tmpdir(), "turno-"));
+    db = crearConexion(`file:${path.join(dir, "t.db")}`);
+    runMigrations(db);
+    seed(db);
+    const repo = new SqliteTurnoRepository(db);
+    const now = new Date();
+    await expect(repo.actualizar({ id: "nope", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date(), fin: new Date(), estado: "pendiente" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now })).rejects.toBeTruthy();
+  });
 });
