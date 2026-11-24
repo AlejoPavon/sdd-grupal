@@ -88,7 +88,7 @@ describe("sqlite turno repository", () => {
     const t = { id:"t1", pacienteId:"pac1", profesionalId:"prof1", sillonId:"sil1", prestacionId:"pre1", inicio:new Date("2026-01-01T09:00:00Z"), fin:new Date("2026-01-01T09:30:00Z"), estado:"pendiente" as any, esSobreturno:false, createdBy:"u1", createdAt:now, updatedAt:now };
     await r1.crear(t);
     const t2 = { ...t, id:"t2" };
-    await expect(r2.crear(t2)).rejects.toBeTruthy();
+    await expect(r2.crear(t2)).rejects.toMatchObject({ code: "TURNO_SOLAPADO_PROFESIONAL" });
     db1.close(); db2.close();
     db = null;
   });
