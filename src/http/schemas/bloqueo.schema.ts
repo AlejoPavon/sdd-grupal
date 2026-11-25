@@ -5,22 +5,22 @@ import { z } from "zod";
  * `BLOQUEO_RECURSO_REQUERIDO` en lugar de `VALIDACION_FALLIDA`.
  */
 export const crearBloqueoSchema = z.object({
-  profesionalId: z.string().uuid().optional(),
-  sillonId: z.string().uuid().optional(),
-  inicio: z.string().datetime(),
-  fin: z.string().datetime(),
+  profesionalId: z.uuid().optional(),
+  sillonId: z.uuid().optional(),
+  inicio: z.iso.datetime(),
+  fin: z.iso.datetime(),
   motivo: z.string().min(1),
 });
 
 export type CrearBloqueoBody = z.infer<typeof crearBloqueoSchema>;
 
 export const listarBloqueosQuerySchema = z.object({
-  desde: z.string().datetime().optional(),
-  hasta: z.string().datetime().optional(),
+  desde: z.iso.datetime().optional(),
+  hasta: z.iso.datetime().optional(),
 });
 
 export type ListarBloqueosQuery = z.infer<typeof listarBloqueosQuerySchema>;
 
 export const idBloqueoParamsSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
 });

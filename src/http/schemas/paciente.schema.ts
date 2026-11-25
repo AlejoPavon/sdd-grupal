@@ -5,8 +5,8 @@ export const crearPacienteSchema = z.object({
   apellido: z.string().min(1),
   documento: z.string().optional(),
   telefono: z.string().optional(),
-  email: z.string().email().optional(),
-  fechaNacimiento: z.string().datetime().optional(),
+  email: z.email().optional(),
+  fechaNacimiento: z.iso.datetime().optional(),
   notas: z.string().optional(),
 });
 
@@ -15,8 +15,8 @@ export const actualizarPacienteSchema = z.object({
   apellido: z.string().min(1).optional(),
   documento: z.string().optional(),
   telefono: z.string().optional(),
-  email: z.string().email().optional(),
-  fechaNacimiento: z.string().datetime().optional(),
+  email: z.email().optional(),
+  fechaNacimiento: z.iso.datetime().optional(),
   notas: z.string().optional(),
   activo: z.boolean().optional(),
 });

@@ -15,6 +15,8 @@ Los repositorios en memoria pierden todos los datos al reiniciar el servidor. C-
 
 Se mantiene `better-sqlite3` con `engines.node >=20` para no romper la promesa de Node 20 LTS. `node:sqlite` solo está disponible en Node 22 o superior y obligaría a subir la versión mínima del proyecto. Las sesiones quedan en memoria por ser efímeras.
 
+> **Corrección posterior (2026-11-25):** `better-sqlite3@13` declara `engines.node >=22`, por lo que la premisa de mantener Node 20 no se sostiene. Se elevó `engines.node` a `^22.13.0 || ^24.0.0 || >=26.0.0` (intersección de `better-sqlite3@13`, `eslint@10` y `vitest@5`) y se agregó `.npmrc` con `ignore-scripts=true` para que npm use los binarios N-API precompilados en lugar de intentar `node-gyp rebuild`.
+
 ## What Changes
 
 - Nuevo adaptador SQLite en `src/infrastructure/persistence/sqlite/` (conexión, migraciones y un repositorio por entidad).

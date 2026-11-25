@@ -2,7 +2,7 @@
 
 ## Decisions
 
-- **Persistencia:** `better-sqlite3`; `engines.node >=20`. Las sesiones quedan en memoria.
+- **Persistencia:** `better-sqlite3`; `engines.node >=20`. Las sesiones quedan en memoria. *(Corregido 2026-11-25: `better-sqlite3@13` exige Node `>=22`, por lo que `engines.node` pasó a `^22.13.0 || ^24.0.0 || >=26.0.0`; ver la corrección en `proposal.md`.)*
 - **Transaccionalidad de `crear` (turnos):** el repositorio SQLite repite el chequeo dentro de una transacción `BEGIN IMMEDIATE` con las mismas reglas que `CrearTurno`: solapamiento de profesional solo si `esSobreturno === false`; solapamiento de sillón siempre; orden profesional → sillón; estados que ocupan agenda según `ocupaAgenda` de `src/domain/turno/estado-turno.ts`. Si hay conflicto lanza `TurnoSolapadoError`.
 - **`listar`:** replica filtros de memoria: `desde` → `fin > desde`; `hasta` → `inicio < hasta`; orden por `inicio` con desempate estable.
 - **`buscarSolapado*`:** soporta `excluirId`.

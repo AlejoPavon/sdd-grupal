@@ -11,7 +11,7 @@ Sos la base técnica del equipo. Sin tu primer PR nadie más puede empezar. Tu t
 ## Antes de empezar
 
 - [ ] Leer `knowledge-base/02_descripcion_general.md`, `04_modelo_de_datos.md`, `05_reglas_de_negocio.md`, `08_arquitectura_propuesta.md` y `09_decisiones_y_supuestos.md`.
-- [ ] Tener Node.js 20 LTS o superior y npm 10+.
+- [ ] Tener Node.js 22.13 LTS o 24 LTS (no 23/25) y npm 10+.
 - [ ] Clonar el repo que sube Alejo y verificar que `knowledge-base/` y `CHANGES.md` existen.
 - [ ] Configurar tu identidad de Git (ver abajo).
 
@@ -51,7 +51,7 @@ Dejar un proyecto TypeScript + Fastify que arranque, compile, testee y tenga un 
 ### Implementación
 
 1. Crear `package.json` con:
-   - `"type": "module"`, `"engines": { "node": ">=20" }`.
+   - `"type": "module"`, `"engines": { "node": "^22.13.0 || ^24.0.0 || >=26.0.0" }`.
    - Scripts: `dev` (`tsx watch src/main.ts`), `build` (`tsc -p tsconfig.json`), `start` (`node dist/main.js`), `test` (`vitest run`), `test:watch` (`vitest`), `typecheck` (`tsc --noEmit`), `lint` (`eslint .`).
    - Dependencias: `fastify`, `zod`, `dotenv`.
    - Dev: `typescript`, `vitest`, `tsx`, `@types/node`, `eslint`, `typescript-eslint`.

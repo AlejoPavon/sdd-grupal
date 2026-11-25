@@ -3,7 +3,7 @@
 ## Decisiones documentadas
 
 ### DD-01 — Stack TypeScript + Node.js
-**Decisión**: implementar el backend con Node.js 20 LTS, TypeScript 5, Fastify 4, Zod y Vitest.
+**Decisión**: implementar el backend con Node.js 22.13+ LTS, TypeScript 5, Fastify 5, Zod 4 y Vitest 5.
 **Contexto**: el repositorio declara Node.js LTS; la consigna permite API o módulo de dominio sin interfaz gráfica.
 **Alternativas consideradas**: Python + FastAPI; Java + Spring Boot; Node.js + Express.
 **Justificación**: un solo lenguaje para dominio, API y tests; tipado estricto para reglas de agenda; arranque y testeo rápidos; Express fue descartado por validación y errores más manuales.

@@ -4,14 +4,14 @@
 
 | Capa | Tecnología | Versión mínima | Notas |
 |---|---|---|---|
-| Runtime | Node.js | 20 LTS | Requisito del repositorio |
+| Runtime | Node.js | 22.13 / 24 LTS | `engines.node: ^22.13.0 \|\| ^24.0.0 \|\| >=26.0.0`; Node 20 no es compatible con `better-sqlite3@13` ni con `eslint@10` |
 | Lenguaje | TypeScript | 5.x | Modo estricto (`strict: true`) |
-| Gestor de paquetes | npm | 10.x | Sin dependencias nativas obligatorias |
-| API HTTP | Fastify | 4.x | JSON, validación con schemas |
-| Validación | Zod | 3.x | Schemas de entrada y errores de negocio |
-| Tests | Vitest | 1.x | Unitarios e integración |
-| Persistencia (MVP) | Repositorio en memoria | — | Interfaz `TurnoRepository`; sin base de datos en v0.1 |
-| Persistencia (posterior) | SQLite o PostgreSQL | — | Se incorpora cuando el change lo requiera |
+| Gestor de paquetes | npm | 10.x | `better-sqlite3` trae prebuilds N-API; no requiere compilador ni Visual Studio |
+| API HTTP | Fastify | 5.x | JSON, validación con schemas Zod manuales; `@fastify/cookie@11` |
+| Validación | Zod | 4.x | Schemas de entrada y errores de negocio |
+| Tests | Vitest | 5.x | Unitarios e integración |
+| Persistencia (default dev) | Repositorio en memoria | — | `PERSISTENCE=memory`; seed ficticio, sin base de datos |
+| Persistencia (SQLite) | SQLite + `better-sqlite3` | 13.x | `PERSISTENCE=sqlite`; `DATABASE_URL=file:./data/turnos.db` |
 | Fechas | `Date`/ISO 8601 UTC | — | Zona de negocio: `America/Argentina/Buenos_Aires` |
 
 **Decisión de stack:** el README del repositorio declara Node.js LTS y la consigna permite una API o un módulo de dominio sin interfaz gráfica. Se elige TypeScript + Node.js por tipado del dominio, velocidad de testeo y facilidad de reproducción local. Ver `09_decisiones_y_supuestos.md` (DD-01).
