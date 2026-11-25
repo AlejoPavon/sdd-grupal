@@ -18,7 +18,7 @@
 ## 2. Estado de partida
 
 - La fundación está completa: entorno, estado, Discovery, KB y roadmap.
-- **Todavía no existe código de la aplicación.** El primer PR crea el esqueleto.
+- El código de C-01 a C-10 ya está integrado en `main`: API, dominio, auth, pacientes, bloqueos, sobreturnos y persistencia SQLite.
 - Alejo ya tiene commits de la fundación. Los otros cuatro integrantes deben generar sus propios commits con su nombre y email.
 
 ## 3. Olas de trabajo (orden obligatorio)
@@ -56,7 +56,7 @@ OLA 6 — Alejo
 
 Estas decisiones ya están en la KB. No cambiarlas sin acordarlo con el equipo.
 
-- **Stack:** Node.js 20 LTS, TypeScript 5 estricto, Fastify 4, Zod 3, Vitest 1, ESM.
+- **Stack:** Node.js 22.13 / 24 LTS, TypeScript 5 estricto, Fastify 5, Zod 4, Vitest 5, ESM.
 - **Fechas:** ISO 8601 UTC en la API; zona de negocio `America/Argentina/Buenos_Aires` solo para mostrar.
 - **Intervalos:** semiabiertos `[inicio, fin)`. `A` y `B` se solapan si `A.inicio < B.fin && A.fin > B.inicio`.
 - **Estados de turno:** `pendiente | confirmado | atendido | cancelado | ausente`.
@@ -85,8 +85,7 @@ Cada integrante trabaja en su propia rama y abre un Pull Request. **No se pushea
 ```bash
 git clone <URL-del-repo>
 cd <carpeta-del-repo>
-npm install        # la primera vez, porque todavía no hay package-lock.json
-# después de C-01, cuando ya exista el lockfile: npm ci
+npm ci             # instala exactamente las versiones de package-lock.json
 
 # Identidad propia: sin esto, el commit queda a nombre de otro
 git config user.name "Nombre Apellido"

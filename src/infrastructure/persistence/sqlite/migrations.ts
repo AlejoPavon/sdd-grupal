@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import type Database from "better-sqlite3";
+import type { MigracionRow } from "./row-types.js";
 
 export function runMigrations(db: Database.Database): void {
   db.exec(`
@@ -14,7 +15,7 @@ export function runMigrations(db: Database.Database): void {
     .filter((f) => f.endsWith(".sql"))
     .sort();
   const applied = new Set(
-    db.prepare("SELECT version FROM schema_migrations").all().map((r: any) => r.version)
+    (db.prepare("SELECT version FROM schema_migrations").all() as MigracionRow[]).map((r) => r.version)
   );
   const insert = db.prepare(
     "INSERT INTO schema_migrations(version, applied_at) VALUES (?, ?)"

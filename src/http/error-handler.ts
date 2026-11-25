@@ -148,10 +148,11 @@ export function registrarErrorHandler(app: FastifyInstance): void {
       return responderDominio(reply, 400, error);
     }
 
-    const statusCode = (error as { statusCode?: number }).statusCode ?? 500;
-    return reply.status(statusCode).send({
+    // Fastify 5 tipa el error del handler como `unknown`.
+    const generico = error as { statusCode?: number; message?: string };
+    return reply.status(generico.statusCode ?? 500).send({
       code: "ERROR_INTERNO",
-      message: error.message,
+      message: generico.message ?? "Error interno",
       details: {},
     });
   });

@@ -1,8 +1,10 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import type Database from "better-sqlite3";
 import { afterEach, describe, expect, it } from "vitest";
 import { Intervalo } from "../../src/domain/turno/intervalo";
+import type { FiltrosBloqueo } from "../../src/application/ports/bloqueo-repository";
 import { createRepos } from "../../src/infrastructure/persistence/create-repos";
 import { InMemoryTurnoRepository } from "../../src/infrastructure/persistence/in-memory-turno-repository";
 import { crearConexion } from "../../src/infrastructure/persistence/sqlite/connection";
@@ -34,7 +36,7 @@ describe("cobertura de escenarios SQLite", () => {
     return { db, file };
   }
 
-  async function sembrar(db: any) {
+  async function sembrar(db: Database.Database) {
     await new SqliteProfesionalRepository(db).crear({
       id: "prof1", nombre: "Ana", apellido: "Demo", matricula: "M1", especialidades: ["general"], activo: true,
     });
@@ -130,7 +132,7 @@ describe("cobertura de escenarios SQLite", () => {
     await repo.crear(bloqueo("b1", { profesionalId: "prof1" }, 60, 90));
     await repo.crear(bloqueo("b2", { sillonId: "sil1" }, 0, 30));
     await repo.crear(bloqueo("b3", { profesionalId: "prof1" }, 0, 30));
-    const ids = async (f?: any) => (await repo.listar(f)).map((x) => x.id);
+    const ids = async (f?: FiltrosBloqueo) => (await repo.listar(f)).map((x) => x.id);
     expect(await ids()).toEqual(["b2", "b3", "b1"]);
     expect(await ids({ profesionalId: "prof1" })).toEqual(["b3", "b1"]);
     expect(await ids({ sillonId: "sil1" })).toEqual(["b2"]);

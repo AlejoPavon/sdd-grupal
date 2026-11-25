@@ -1,6 +1,7 @@
 import type Database from "better-sqlite3";
 import type { SillonRepository } from "../../../application/ports/sillon-repository.js";
 import type { Sillon } from "../../../domain/sillon/sillon.js";
+import type { SillonRow } from "./row-types.js";
 
 export class SqliteSillonRepository implements SillonRepository {
   constructor(private readonly db: Database.Database) {}
@@ -17,7 +18,7 @@ export class SqliteSillonRepository implements SillonRepository {
   async buscarPorId(id: string): Promise<Sillon | undefined> {
     const row = this.db
       .prepare("SELECT id, nombre, sucursal_id, activo FROM sillon WHERE id = ?")
-      .get(id) as any;
+      .get(id) as SillonRow;
     if (!row) return undefined;
     return {
       id: row.id,
@@ -30,7 +31,7 @@ export class SqliteSillonRepository implements SillonRepository {
   async listar(): Promise<Sillon[]> {
     const rows = this.db
       .prepare("SELECT id, nombre, sucursal_id, activo FROM sillon")
-      .all() as any[];
+      .all() as SillonRow[];
     return rows.map((r) => ({
       id: r.id,
       nombre: r.nombre,

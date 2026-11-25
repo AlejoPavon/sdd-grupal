@@ -99,6 +99,19 @@ Se relevó el mercado argentino, latinoamericano e internacional (10 AR, 5 LATAM
 │       ├── aracelly-caballero.md
 │       └── javier-alaniz.md
 ├── knowledge-base/                       # Base de conocimiento (10 canónicos + README)
+├── src/                                  # Código de la aplicación
+│   ├── domain/                           # Entidades, value objects y reglas de negocio
+│   ├── application/                      # Casos de uso y puertos de repositorio
+│   ├── infrastructure/                   # Adaptadores en memoria, SQLite y seed
+│   └── http/                             # Servidor Fastify, rutas, schemas y plugins
+├── tests/                                # Tests unitarios e integración (Vitest)
+├── migrations/                           # Migraciones SQL de SQLite (C-10)
+├── data/                                 # Base SQLite local (ignorada por git)
+├── package.json                          # Dependencias, scripts y engines
+├── package-lock.json                     # Versiones exactas (usar `npm ci`)
+├── tsconfig.json / vitest.config.ts / eslint.config.js
+├── .npmrc                                # ignore-scripts (prebuilds N-API)
+├── .env.example                          # Variables de entorno de ejemplo
 ├── CHANGES.md                            # Roadmap: 19 changes en 8 fases
 ├── openspec/                             # Workspace OpenSpec
 │   ├── config.yaml                       # Reglas de herramientas y esquemas
@@ -117,9 +130,12 @@ Siga estos pasos para replicar el entorno de desarrollo y continuar la fundació
 
 ### Prerequisites
 - **Git 2.40+**
-- **Node.js LTS (v20+)** & **NPM**
+- **Node.js 22.13 LTS o 24 LTS** (evitá las versiones impares 23 y 25) & **npm 10+**
 - **Go 1.26+** (requerido únicamente si compila Active Stack desde fuente)
 - **OpenCode** o **Claude Code**
+
+> [!IMPORTANT]
+> El proyecto **no soporta Node 20** (`better-sqlite3@13` exige Node `>=22` y `eslint@10` exige `>=22.13`) ni las versiones impares 23/25 (no soportadas por Vitest 5). `package.json` declara `engines.node: "^22.13.0 || ^24.0.0 || >=26.0.0"` y `.npmrc` activa `engine-strict`, así que npm rechaza la instalación con un mensaje claro si la versión no cumple.
 
 ---
 
@@ -130,7 +146,38 @@ git clone git@github.com:AlejoPavon/sdd-grupal.git
 cd sdd-grupal
 ```
 
-### Step 2: Active Stack Setup
+### Step 2: Install Dependencies
+
+```bash
+npm ci                 # instala las versiones exactas de package-lock.json
+cp .env.example .env   # opcional: ajustar PORT, PERSISTENCE y DATABASE_URL
+```
+
+> [!NOTE]
+> `better-sqlite3@13` incluye binarios N-API precompilados para Windows, Linux y macOS. El archivo `.npmrc` fija `ignore-scripts=true` para que npm **no** intente compilar con `node-gyp`: no hace falta Visual Studio ni build tools de C++. Es seguro para el proyecto: `esbuild` (usado por `tsx` y `vitest`) también funciona sin su `postinstall`.
+>
+> Si necesitás ejecutar los scripts de instalación por algún motivo, usá `npm ci --ignore-scripts=false` (en Windows requerirá las build tools de C++ para `better-sqlite3`).
+>
+> `.npmrc` también fija `engine-strict=true`: npm rechaza la instalación si Node no cumple `engines.node`, en lugar de fallar más tarde en runtime.
+
+La API usa `PERSISTENCE=memory` por defecto (seed ficticio en memoria). Para persistir en SQLite, configurá `PERSISTENCE=sqlite` y `DATABASE_URL=file:./data/turnos.db`; la carpeta `data/` se crea automáticamente y está ignorada por git.
+
+### Step 3: Verify the Installation
+
+```bash
+npm run typecheck      # TypeScript estricto sin errores
+npm test               # suite completa (Vitest)
+npm run dev            # levanta la API en http://localhost:3000
+# en otra terminal:
+curl -s http://localhost:3000/health
+```
+
+Scripts disponibles: `dev`, `build`, `start`, `test`, `test:watch`, `typecheck` y `lint`.
+
+> [!NOTE]
+> El stack usa `fastify@5`, `@fastify/cookie@11` y `zod@4` (migraciones mayores ya aplicadas). `npm audit` reporta **0 vulnerabilidades**.
+
+### Step 4: Active Stack Setup
 
 Active Stack provee los harnesses metodológicos necesarios para OpenCode:
 
@@ -150,7 +197,7 @@ cd -
 
 ---
 
-### Step 3: Verify Tooling
+### Step 5: Verify Tooling
 
 Asegúrese de que las herramientas CLI externas estén en su `$PATH`:
 
@@ -164,7 +211,7 @@ engram --version
 
 ---
 
-### Step 4: Run the Foundation Orchestrator
+### Step 6: Run the Foundation Orchestrator
 
 Abra OpenCode dentro del directorio del proyecto:
 

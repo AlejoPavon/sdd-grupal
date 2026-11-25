@@ -127,7 +127,7 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
 ### [C-01] `foundation-setup`
 - **Estado**: `[x]` completado
 - **Scope**: Scaffolding TypeScript + Node.js y servidor mínimo
-  - `package.json` con scripts `dev`, `build`, `test`, `typecheck`, `lint`; ESM; Node.js 20+
+  - `package.json` con scripts `dev`, `build`, `test`, `typecheck`, `lint`; ESM; Node.js 22.13/24 LTS (`engines.node`)
   - `tsconfig.json` con `strict`, `noUncheckedIndexedAccess`, `paths` para `@/domain`, `@/application`, `@/infrastructure`
   - Dependencias: `fastify`, `zod`; dev: `typescript`, `vitest`, `tsx`, `@types/node`
   - `src/http/server.ts` con `GET /health` → `{ status: "ok" }`
@@ -305,7 +305,7 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
 ### [C-10] `sqlite-persistence`
 - **Estado**: `[x]` completado
 - **Scope**: Adaptador SQLite y migraciones
-  - Dependencia `better-sqlite3` (o `node:sqlite` si la versión de Node lo soporta)
+  - Dependencia `better-sqlite3@13` (N-API con binarios precompilados; `.npmrc` fija `ignore-scripts=true` para que npm no ejecute `node-gyp`). Requiere Node `>=22`; el proyecto fija Node 22.13/24 LTS en `engines.node`
   - Migración 001: `sucursal`, `usuario`, `profesional`, `sillon`, `prestacion`, `paciente`, `turno`, `bloqueo`
   - Índices: `(profesional_id, inicio, fin)`, `(sillon_id, inicio, fin)`, `(paciente_id, inicio)`, `(estado)`
   - Implementaciones `SqliteTurnoRepository` y `SqlitePacienteRepository` detrás de los mismos puertos

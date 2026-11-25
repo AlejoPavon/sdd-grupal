@@ -9,14 +9,14 @@
 
 | Capa | Tecnología | Versión mínima | Notas |
 |---|---|---|---|
-| Runtime | Node.js | 20 LTS | Requisito del repositorio |
+| Runtime | Node.js | 22.13 / 24 LTS | `engines.node` en `package.json`; `better-sqlite3` usa prebuilds N-API |
 | Lenguaje | TypeScript | 5.x | Modo estricto (`strict: true`) |
-| Gestor de paquetes | npm | 10.x | Sin dependencias nativas obligatorias |
-| API HTTP | Fastify | 4.x | JSON, validación con schemas |
-| Validación | Zod | 3.x | Schemas de entrada y errores de negocio |
-| Tests | Vitest | 1.x | Unitarios e integración |
-| Persistencia (MVP) | Repositorio en memoria | — | Interfaz `TurnoRepository`; sin base de datos en v0.1 |
-| Persistencia (posterior) | SQLite o PostgreSQL | — | Se incorpora cuando el change lo requiera |
+| Gestor de paquetes | npm | 10.x | `better-sqlite3` con prebuilds N-API; no requiere compilador |
+| API HTTP | Fastify | 5.x | JSON, validación con schemas Zod manuales; `@fastify/cookie@11` |
+| Validación | Zod | 4.x | Schemas de entrada y errores de negocio |
+| Tests | Vitest | 5.x | Unitarios e integración |
+| Persistencia (default dev) | Repositorio en memoria | — | `PERSISTENCE=memory`; seed ficticio, sin base de datos |
+| Persistencia (SQLite) | SQLite + `better-sqlite3` | 13.x | `PERSISTENCE=sqlite`; `DATABASE_URL=file:./data/turnos.db` |
 | Fechas | `Date`/ISO 8601 UTC | — | Zona de negocio: `America/Argentina/Buenos_Aires` |
 
 Detalle completo: [knowledge-base/02_descripcion_general.md](knowledge-base/02_descripcion_general.md)
@@ -80,14 +80,14 @@ El plan de implementación completo está en [CHANGES.md](CHANGES.md). Resumen:
 
 > Reglas **globales** ya definidas en el archivo global de instrucciones del cliente activo (orquestador, governance, TDD, engram, design-mockups): el proyecto las **hereda**, no se repiten acá.
 
-Acá van: (a) las reglas específicas de este proyecto, derivadas de su stack (Node 20 / TS 5 strict / Fastify 4 / Zod 3 / Vitest / persistencia en memoria) y **confirmadas con el usuario**; y (b) las universales que el global no cubre. Son contrato; romperlas es un defecto. Formato `NUNCA X → hacer Y`:
+Acá van: (a) las reglas específicas de este proyecto, derivadas de su stack (Node 22.13 / TS 5 strict / Fastify 5 / Zod 4 / Vitest 5 / memoria o SQLite) y **confirmadas con el usuario**; y (b) las universales que el global no cubre. Son contrato; romperlas es un defecto. Formato `NUNCA X → hacer Y`:
 
 1. NUNCA usar `any` en TypeScript → tipar estricto; componentes/tipos en `PascalCase`, funciones/variables en `camelCase`; `strict: true`.
 2. NUNCA validar entrada fuera de Zod en el borde HTTP → schemas Zod en Fastify; el dominio no conoce Fastify/Zod/persistencia.
 3. NUNCA poner reglas de solapamiento fuera del dominio → RN-AG-* viven en domain y se testean sin levantar el servidor.
 4. NUNCA emitir error de negocio sin código estable → usar códigos (`TURNO_SOLAPADO_PROFESIONAL`, `TURNO_SOLAPADO_SILLON`, etc.) y shape `{ code, message, details }`.
 5. NUNCA representar fechas fuera de ISO 8601 UTC → zona de negocio `America/Argentina/Buenos_Aires` solo en presentación; intervalos semiabiertos `[inicio, fin)`.
-6. NUNCA depender de una DB en v0.1 → persistencia en memoria vía interfaces `*Repository`; SQLite/PostgreSQL solo cuando un change lo requiera.
+6. NUNCA acoplar el dominio o la aplicación a una DB → la persistencia va detrás de puertos `*Repository`; memoria es el default (`PERSISTENCE=memory`) y SQLite es opcional (`PERSISTENCE=sqlite`, C-10).
 7. NUNCA usar datos reales de pacientes → todo dato de paciente es ficticio (KB README).
 8. NUNCA saltear TDD → tests con Vitest; ciclo RED/GREEN/TRIANGULATE/REFACTOR (global).
 9. NUNCA buildear, commitear o pushear sin pedido explícito del usuario.

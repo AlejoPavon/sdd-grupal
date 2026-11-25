@@ -53,7 +53,7 @@
 
 ## [DISCOVERY] Campos inferidos con baja confianza (Mode A)
 
-- `[DISCOVERY]` `stack` no está definido en los documentos de Discovery. Se infirió **Node.js 20 LTS + TypeScript 5 + Fastify 4 + Zod + Vitest** a partir del README (badge Node.js LTS) y de la consigna (API o módulo de dominio). Confirmar antes de implementar.
+- `[DISCOVERY]` `stack` no está definido en los documentos de Discovery. Se infirió **Node.js LTS + TypeScript 5 + Fastify 4 + Zod + Vitest** a partir del README (badge Node.js LTS) y de la consigna (API o módulo de dominio). **Resuelto:** el stack implementado es Node.js **22.13+** LTS (C-10 incorporó `better-sqlite3@13`, que exige Node `>=22`) + TypeScript 5 + Fastify 5 + Zod 4 + Vitest 5.
 - `[DISCOVERY]` `scale` se infirió como **team + public_multi_user (reserva online futura)** a partir de los actores (administrador, recepción, profesional, paciente). Confirmar si el alcance real es un consultorio único.
 - `[DISCOVERY]` `needs_infra` se infirió como **false**: el MVP no requiere base de datos, colas ni contenedores. Cambia a `true` si se exige persistencia o despliegue.
 - `[DISCOVERY]` `system_type` se infirió como **web_app (API REST)**; no hay interfaz gráfica en v0.1.

@@ -1,6 +1,7 @@
 import type Database from "better-sqlite3";
 import type { PrestacionRepository } from "../../../application/ports/prestacion-repository.js";
 import type { Prestacion } from "../../../domain/prestacion/prestacion.js";
+import type { PrestacionRow } from "./row-types.js";
 
 export class SqlitePrestacionRepository implements PrestacionRepository {
   constructor(private readonly db: Database.Database) {}
@@ -24,7 +25,7 @@ export class SqlitePrestacionRepository implements PrestacionRepository {
   async buscarPorId(id: string): Promise<Prestacion | undefined> {
     const row = this.db
       .prepare("SELECT id, codigo, nombre, duracion_minutos, precio, activo FROM prestacion WHERE id = ?")
-      .get(id) as any;
+      .get(id) as PrestacionRow;
     if (!row) return undefined;
     return {
       id: row.id,
@@ -39,7 +40,7 @@ export class SqlitePrestacionRepository implements PrestacionRepository {
   async listar(): Promise<Prestacion[]> {
     const rows = this.db
       .prepare("SELECT id, codigo, nombre, duracion_minutos, precio, activo FROM prestacion")
-      .all() as any[];
+      .all() as PrestacionRow[];
     return rows.map((r) => ({
       id: r.id,
       codigo: r.codigo,

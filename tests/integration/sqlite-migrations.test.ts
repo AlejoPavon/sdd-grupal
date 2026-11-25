@@ -17,14 +17,13 @@ describe("migraciones sqlite", () => {
     const url = `file:${file}`;
     const db1 = crearConexion(url);
     runMigrations(db1);
-    const tables = db1
-      .prepare("SELECT name FROM sqlite_master WHERE type='table'")
-      .all()
-      .map((r: any) => r.name);
+    const tables = (
+      db1.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as Array<{ name: string }>
+    ).map((r) => r.name);
     expect(tables).toContain("turno");
     expect(tables).toContain("paciente");
     runMigrations(db1);
-    const count = db1.prepare("SELECT COUNT(*) as c FROM schema_migrations").get() as any;
+    const count = db1.prepare("SELECT COUNT(*) as c FROM schema_migrations").get() as { c: number };
     expect(count.c).toBe(2);
     db1.close();
   });
@@ -34,10 +33,9 @@ describe("migraciones sqlite", () => {
     const file = path.join(dir, "t.db");
     const db = crearConexion(`file:${file}`);
     runMigrations(db);
-    const idx = db
-      .prepare("SELECT name FROM sqlite_master WHERE type='index'")
-      .all()
-      .map((r: any) => r.name);
+    const idx = (
+      db.prepare("SELECT name FROM sqlite_master WHERE type='index'").all() as Array<{ name: string }>
+    ).map((r) => r.name);
     expect(idx).toContain("idx_turno_profesional_rango");
     expect(idx).toContain("idx_paciente_email_activo");
     db.close();

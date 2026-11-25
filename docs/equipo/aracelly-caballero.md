@@ -116,11 +116,11 @@ Persistir turnos y pacientes en SQLite detrás de los mismos puertos, sin que el
 
 ### Implementación
 
-1. **Dependencia:** `better-sqlite3` + `@types/better-sqlite3`.
-   - Si la instalación nativa falla en tu máquina, documentalo en el PR y usá `node:sqlite` solo si tu Node es 22+; no cambies la versión de Node del proyecto sin acordarlo.
+1. **Dependencia:** `better-sqlite3@13` + `@types/better-sqlite3`.
+   - Requiere Node `>=22` (el proyecto fija Node 22.13/24 LTS en `engines.node`). El paquete trae binarios N-API precompilados y `.npmrc` fija `ignore-scripts=true`, así que no hace falta compilador ni Visual Studio. No hace falta migrar a `node:sqlite`.
 2. **Configuración**:
    - `PERSISTENCE=memory|sqlite` (default `memory`).
-   - `DATABASE_PATH=./data/turnos.db` (default).
+   - `DATABASE_URL=file:./data/turnos.db` (default).
    - Crear el directorio `data/` si no existe; `data/` está en `.gitignore`.
 3. **Conexión** (`connection.ts`):
    - Abrir la base con `better-sqlite3`.

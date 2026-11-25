@@ -3,6 +3,7 @@ import type { PacienteRepository } from "../../../application/ports/paciente-rep
 import type { Paciente } from "../../../domain/paciente/paciente.js";
 import { RecursoNoEncontradoError } from "../../../domain/turno/turno.errors.js";
 import { PacienteDuplicadoError } from "../../../domain/paciente/paciente.errors.js";
+import type { PacienteRow } from "./row-types.js";
 
 export class SqlitePacienteRepository implements PacienteRepository {
   constructor(private readonly db: Database.Database) {}
@@ -28,13 +29,13 @@ export class SqlitePacienteRepository implements PacienteRepository {
           paciente.updatedAt.getTime()
         );
       return paciente;
-    } catch (e: any) {
+    } catch (e: unknown) {
       throw mapUniqueError(e);
     }
   }
 
   async buscarPorId(id: string): Promise<Paciente | undefined> {
-    const row = this.db.prepare("SELECT * FROM paciente WHERE id = ?").get(id) as any;
+    const row = this.db.prepare("SELECT * FROM paciente WHERE id = ?").get(id) as PacienteRow;
     if (!row) return undefined;
     return map(row);
   }
@@ -47,7 +48,7 @@ export class SqlitePacienteRepository implements PacienteRepository {
   async buscarPorEmailODocumento(criterios: { email?: string; documento?: string }): Promise<Paciente | undefined> {
     const { email, documento } = criterios;
     if (email === undefined && documento === undefined) return undefined;
-    const rows = this.db.prepare("SELECT * FROM paciente").all() as any[];
+    const rows = this.db.prepare("SELECT * FROM paciente").all() as PacienteRow[];
     const found = rows.map(map).find(
       (p) =>
         p.activo &&
@@ -58,7 +59,7 @@ export class SqlitePacienteRepository implements PacienteRepository {
   }
 
   async listar(q?: string): Promise<Paciente[]> {
-    const rows = this.db.prepare("SELECT * FROM paciente WHERE activo = 1").all() as any[];
+    const rows = this.db.prepare("SELECT * FROM paciente WHERE activo = 1").all() as PacienteRow[];
     const activos = rows.map(map);
     const texto = q?.trim().toLowerCase();
     const filtrados = texto
@@ -94,15 +95,20 @@ export class SqlitePacienteRepository implements PacienteRepository {
           paciente.id
         );
       return paciente;
-    } catch (e: any) {
+    } catch (e: unknown) {
       throw mapUniqueError(e);
     }
   }
 }
 
-function mapUniqueError(e: any): unknown {
-  const msg = String(e?.message ?? "");
-  const esUnico = e?.code === "SQLITE_CONSTRAINT_UNIQUE" || msg.includes("UNIQUE constraint failed");
+function mapUniqueError(e: unknown): unknown {
+  const error = (typeof e === "object" && e !== null ? e : {}) as {
+    code?: unknown;
+    message?: unknown;
+  };
+  const msg = typeof error.message === "string" ? error.message : "";
+  const esUnico =
+    error.code === "SQLITE_CONSTRAINT_UNIQUE" || msg.includes("UNIQUE constraint failed");
   if (!esUnico) return e;
   if (msg.includes("idx_paciente_email_activo") || msg.includes("paciente.email")) {
     return new PacienteDuplicadoError("email");
@@ -113,7 +119,7 @@ function mapUniqueError(e: any): unknown {
   return e;
 }
 
-function map(row: any): Paciente {
+function map(row: PacienteRow): Paciente {
   return {
     id: row.id,
     nombre: row.nombre,
