@@ -4,6 +4,7 @@ import type { Turno } from "../../../domain/turno/turno.js";
 import type { Intervalo } from "../../../domain/turno/intervalo.js";
 import { TurnoSolapadoError, RecursoNoEncontradoError } from "../../../domain/turno/turno.errors.js";
 import { ocupaAgenda } from "../../../domain/turno/estado-turno.js";
+import type { TurnoRow } from "./row-types.js";
 
 export class SqliteTurnoRepository implements TurnoRepository {
   constructor(private readonly db: Database.Database) {}
@@ -53,20 +54,20 @@ export class SqliteTurnoRepository implements TurnoRepository {
   private buscarSolapadosSync(column: string, value: string, inicio: Date, fin: Date): Turno[] {
     const rows = this.db
       .prepare(`SELECT * FROM turno WHERE ${column} = ?`)
-      .all(value) as any[];
+      .all(value) as TurnoRow[];
     return rows
       .map(map)
       .filter((t) => t.inicio.getTime() < fin.getTime() && t.fin.getTime() > inicio.getTime());
   }
 
   async buscarPorId(id: string): Promise<Turno | undefined> {
-    const row = this.db.prepare("SELECT * FROM turno WHERE id = ?").get(id) as any;
+    const row = this.db.prepare("SELECT * FROM turno WHERE id = ?").get(id) as TurnoRow;
     if (!row) return undefined;
     return map(row);
   }
 
   async listar(filtros?: FiltrosTurno): Promise<Turno[]> {
-    const rows = this.db.prepare("SELECT * FROM turno ORDER BY inicio, rowid").all() as any[];
+    const rows = this.db.prepare("SELECT * FROM turno ORDER BY inicio, rowid").all() as TurnoRow[];
     let res = rows.map(map);
     if (filtros?.profesionalId) res = res.filter((t) => t.profesionalId === filtros.profesionalId);
     if (filtros?.sillonId) res = res.filter((t) => t.sillonId === filtros.sillonId);
@@ -77,7 +78,7 @@ export class SqliteTurnoRepository implements TurnoRepository {
   }
 
   async buscarSolapadoPorProfesional(profesionalId: string, intervalo: Intervalo, excluirId?: string): Promise<Turno[]> {
-    const rows = this.db.prepare("SELECT * FROM turno WHERE profesional_id = ?").all(profesionalId) as any[];
+    const rows = this.db.prepare("SELECT * FROM turno WHERE profesional_id = ?").all(profesionalId) as TurnoRow[];
     return rows
       .map(map)
       .filter((t) => ocupaAgenda(t.estado))
@@ -86,7 +87,7 @@ export class SqliteTurnoRepository implements TurnoRepository {
   }
 
   async buscarSolapadoPorSillon(sillonId: string, intervalo: Intervalo, excluirId?: string): Promise<Turno[]> {
-    const rows = this.db.prepare("SELECT * FROM turno WHERE sillon_id = ?").all(sillonId) as any[];
+    const rows = this.db.prepare("SELECT * FROM turno WHERE sillon_id = ?").all(sillonId) as TurnoRow[];
     return rows
       .map(map)
       .filter((t) => ocupaAgenda(t.estado))
@@ -120,7 +121,7 @@ export class SqliteTurnoRepository implements TurnoRepository {
   }
 }
 
-function map(row: any): Turno {
+function map(row: TurnoRow): Turno {
   return {
     id: row.id,
     pacienteId: row.paciente_id,

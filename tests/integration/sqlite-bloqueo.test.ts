@@ -1,6 +1,7 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import type Database from "better-sqlite3";
 import { afterEach, describe, expect, it } from "vitest";
 import { crearConexion } from "../../src/infrastructure/persistence/sqlite/connection";
 import { runMigrations } from "../../src/infrastructure/persistence/sqlite/migrations";
@@ -9,7 +10,7 @@ import { Intervalo } from "../../src/domain/turno/intervalo";
 
 describe("sqlite bloqueo repository", () => {
   let dir: string;
-  let db: any;
+  let db: Database.Database | null = null;
   afterEach(() => {
     if (db) db.close();
     if (dir) rmSync(dir, { recursive: true, force: true });

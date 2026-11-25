@@ -1,6 +1,7 @@
 import type Database from "better-sqlite3";
 import type { ProfesionalRepository } from "../../../application/ports/profesional-repository.js";
 import type { Profesional } from "../../../domain/profesional/profesional.js";
+import type { ProfesionalRow } from "./row-types.js";
 
 export class SqliteProfesionalRepository implements ProfesionalRepository {
   constructor(private readonly db: Database.Database) {}
@@ -24,7 +25,7 @@ export class SqliteProfesionalRepository implements ProfesionalRepository {
   async buscarPorId(id: string): Promise<Profesional | undefined> {
     const row = this.db
       .prepare("SELECT id, nombre, apellido, matricula, especialidades, activo FROM profesional WHERE id = ?")
-      .get(id) as any;
+      .get(id) as ProfesionalRow;
     if (!row) return undefined;
     return {
       id: row.id,
@@ -39,7 +40,7 @@ export class SqliteProfesionalRepository implements ProfesionalRepository {
   async listar(): Promise<Profesional[]> {
     const rows = this.db
       .prepare("SELECT id, nombre, apellido, matricula, especialidades, activo FROM profesional")
-      .all() as any[];
+      .all() as ProfesionalRow[];
     return rows.map((r) => ({
       id: r.id,
       nombre: r.nombre,

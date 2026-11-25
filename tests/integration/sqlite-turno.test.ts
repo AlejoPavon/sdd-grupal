@@ -1,13 +1,15 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import type Database from "better-sqlite3";
 import { afterEach, describe, expect, it } from "vitest";
 import { crearConexion } from "../../src/infrastructure/persistence/sqlite/connection";
 import { runMigrations } from "../../src/infrastructure/persistence/sqlite/migrations";
 import { SqliteTurnoRepository } from "../../src/infrastructure/persistence/sqlite/sqlite-turno-repository";
 import { Intervalo } from "../../src/domain/turno/intervalo";
+import type { EstadoTurno } from "../../src/domain/turno/estado-turno";
 
-function seed(db: any) {
+function seed(db: Database.Database) {
   db.prepare("INSERT INTO profesional(id,nombre,apellido,matricula,especialidades,activo) VALUES (?,?,?,?,?,?)").run("prof1","P","P","M","[]",1);
   db.prepare("INSERT INTO sillon(id,nombre,sucursal_id,activo) VALUES (?,?,?,?)").run("sil1","S","suc",1);
   db.prepare("INSERT INTO prestacion(id,codigo,nombre,duracion_minutos,activo) VALUES (?,?,?,?,?)").run("pre1","C","Consulta",30,1);
@@ -16,7 +18,7 @@ function seed(db: any) {
 
 describe("sqlite turno repository", () => {
   let dir: string;
-  let db: any;
+  let db: Database.Database | null = null;
   afterEach(() => {
     if (db) db.close();
     if (dir) rmSync(dir, { recursive: true, force: true });
@@ -30,7 +32,7 @@ describe("sqlite turno repository", () => {
     seed(db);
     const repo = new SqliteTurnoRepository(db);
     const now = new Date();
-    const t = { id:"t1", pacienteId:"pac1", profesionalId:"prof1", sillonId:"sil1", prestacionId:"pre1", inicio:new Date("2026-01-01T09:00:00Z"), fin:new Date("2026-01-01T09:30:00Z"), estado:"pendiente" as any, esSobreturno:false, notas:"n", createdBy:"u1", autorizadoPor:"u2", createdAt:now, updatedAt:now };
+    const t = { id:"t1", pacienteId:"pac1", profesionalId:"prof1", sillonId:"sil1", prestacionId:"pre1", inicio:new Date("2026-01-01T09:00:00Z"), fin:new Date("2026-01-01T09:30:00Z"), estado:"pendiente" as EstadoTurno, esSobreturno:false, notas:"n", createdBy:"u1", autorizadoPor:"u2", createdAt:now, updatedAt:now };
     await repo.crear(t);
     db.close();
     const db2 = crearConexion(`file:${file}`);
@@ -53,7 +55,7 @@ describe("sqlite turno repository", () => {
     seed(db);
     const repo = new SqliteTurnoRepository(db);
     const now = new Date();
-    const t1 = { id:"t1", pacienteId:"pac1", profesionalId:"prof1", sillonId:"sil1", prestacionId:"pre1", inicio:new Date("2026-01-01T09:00:00Z"), fin:new Date("2026-01-01T09:30:00Z"), estado:"pendiente" as any, esSobreturno:false, createdBy:"u1", createdAt:now, updatedAt:now };
+    const t1 = { id:"t1", pacienteId:"pac1", profesionalId:"prof1", sillonId:"sil1", prestacionId:"pre1", inicio:new Date("2026-01-01T09:00:00Z"), fin:new Date("2026-01-01T09:30:00Z"), estado:"pendiente" as EstadoTurno, esSobreturno:false, createdBy:"u1", createdAt:now, updatedAt:now };
     await repo.crear(t1);
     const t2 = { ...t1, id:"t2", inicio:new Date("2026-01-01T09:15:00Z"), fin:new Date("2026-01-01T09:45:00Z"), sillonId:"sil1" };
     await expect(repo.crear(t2)).rejects.toMatchObject({ code: "TURNO_SOLAPADO_PROFESIONAL" });
@@ -66,9 +68,9 @@ describe("sqlite turno repository", () => {
     seed(db);
     const repo = new SqliteTurnoRepository(db);
     const now = new Date();
-    const t1 = { id:"t1", pacienteId:"pac1", profesionalId:"prof1", sillonId:"sil1", prestacionId:"pre1", inicio:new Date("2026-01-01T09:00:00Z"), fin:new Date("2026-01-01T09:30:00Z"), estado:"pendiente" as any, esSobreturno:false, createdBy:"u1", createdAt:now, updatedAt:now };
+    const t1 = { id:"t1", pacienteId:"pac1", profesionalId:"prof1", sillonId:"sil1", prestacionId:"pre1", inicio:new Date("2026-01-01T09:00:00Z"), fin:new Date("2026-01-01T09:30:00Z"), estado:"pendiente" as EstadoTurno, esSobreturno:false, createdBy:"u1", createdAt:now, updatedAt:now };
     await repo.crear(t1);
-    const t2 = { id:"t2", pacienteId:"pac1", profesionalId:"prof1", sillonId:"sil1", prestacionId:"pre1", inicio:new Date("2026-01-01T09:15:00Z"), fin:new Date("2026-01-01T09:45:00Z"), estado:"pendiente" as any, esSobreturno:true, autorizadoPor:"u1", createdBy:"u1", createdAt:now, updatedAt:now };
+    const t2 = { id:"t2", pacienteId:"pac1", profesionalId:"prof1", sillonId:"sil1", prestacionId:"pre1", inicio:new Date("2026-01-01T09:15:00Z"), fin:new Date("2026-01-01T09:45:00Z"), estado:"pendiente" as EstadoTurno, esSobreturno:true, autorizadoPor:"u1", createdBy:"u1", createdAt:now, updatedAt:now };
     await expect(repo.crear(t2)).rejects.toMatchObject({ code: "TURNO_SOLAPADO_SILLON" });
   });
 
@@ -85,7 +87,7 @@ describe("sqlite turno repository", () => {
     const r1 = new SqliteTurnoRepository(db1);
     const r2 = new SqliteTurnoRepository(db2);
     const now = new Date();
-    const t = { id:"t1", pacienteId:"pac1", profesionalId:"prof1", sillonId:"sil1", prestacionId:"pre1", inicio:new Date("2026-01-01T09:00:00Z"), fin:new Date("2026-01-01T09:30:00Z"), estado:"pendiente" as any, esSobreturno:false, createdBy:"u1", createdAt:now, updatedAt:now };
+    const t = { id:"t1", pacienteId:"pac1", profesionalId:"prof1", sillonId:"sil1", prestacionId:"pre1", inicio:new Date("2026-01-01T09:00:00Z"), fin:new Date("2026-01-01T09:30:00Z"), estado:"pendiente" as EstadoTurno, esSobreturno:false, createdBy:"u1", createdAt:now, updatedAt:now };
     await r1.crear(t);
     const t2 = { ...t, id:"t2" };
     await expect(r2.crear(t2)).rejects.toMatchObject({ code: "TURNO_SOLAPADO_PROFESIONAL" });
@@ -100,9 +102,9 @@ describe("sqlite turno repository", () => {
     seed(db);
     const repo = new SqliteTurnoRepository(db);
     const now = new Date();
-    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as EstadoTurno, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
     await repo.crear(t1);
-    const t2 = { id: "t2", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:15:00Z"), fin: new Date("2026-01-01T09:45:00Z"), estado: "pendiente" as any, esSobreturno: true, autorizadoPor: "u1", createdBy: "u1", createdAt: now, updatedAt: now };
+    const t2 = { id: "t2", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:15:00Z"), fin: new Date("2026-01-01T09:45:00Z"), estado: "pendiente" as EstadoTurno, esSobreturno: true, autorizadoPor: "u1", createdBy: "u1", createdAt: now, updatedAt: now };
     // sillón libre: usar otro sillón
     db.prepare("INSERT INTO sillon(id,nombre,sucursal_id,activo) VALUES (?,?,?,?)").run("sil2", "S2", "suc", 1);
     t2.sillonId = "sil2";
@@ -118,7 +120,7 @@ describe("sqlite turno repository", () => {
     seed(db);
     const repo = new SqliteTurnoRepository(db);
     const now = new Date();
-    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as EstadoTurno, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
     await repo.crear(t1);
     const t2 = { ...t1, id: "t2", inicio: new Date("2026-01-01T09:30:00Z"), fin: new Date("2026-01-01T10:00:00Z") };
     await expect(repo.crear(t2)).resolves.toBeTruthy();
@@ -131,9 +133,9 @@ describe("sqlite turno repository", () => {
     seed(db);
     const repo = new SqliteTurnoRepository(db);
     const now = new Date();
-    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as EstadoTurno, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
     await repo.crear(t1);
-    const cancelled = { ...t1, estado: "cancelado" as any, cancelledAt: new Date(), updatedAt: new Date() };
+    const cancelled = { ...t1, estado: "cancelado" as EstadoTurno, cancelledAt: new Date(), updatedAt: new Date() };
     await repo.actualizar(cancelled);
     const sol = await repo.buscarSolapadoPorProfesional("prof1", new Intervalo(new Date("2026-01-01T09:00:00Z"), new Date("2026-01-01T09:30:00Z")));
     expect(sol).toHaveLength(0);
@@ -149,10 +151,10 @@ describe("sqlite turno repository", () => {
     seed(db);
     const repo = new SqliteTurnoRepository(db);
     const now = new Date();
-    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as EstadoTurno, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
     await repo.crear(t1);
     const cancelledAt = new Date("2026-01-01T10:00:00Z");
-    await repo.actualizar({ ...t1, estado: "cancelado" as any, cancelledAt, updatedAt: new Date() });
+    await repo.actualizar({ ...t1, estado: "cancelado" as EstadoTurno, cancelledAt, updatedAt: new Date() });
     db.close();
     const db2 = crearConexion(`file:${file}`);
     runMigrations(db2);
@@ -171,7 +173,7 @@ describe("sqlite turno repository", () => {
     seed(db);
     const repo = new SqliteTurnoRepository(db);
     const now = new Date();
-    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as EstadoTurno, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
     await repo.crear(t1);
     const res = await repo.buscarSolapadoPorProfesional("prof1", new Intervalo(new Date("2026-01-01T09:00:00Z"), new Date("2026-01-01T09:30:00Z")), "t1");
     expect(res).toHaveLength(0);
@@ -184,8 +186,8 @@ describe("sqlite turno repository", () => {
     seed(db);
     const repo = new SqliteTurnoRepository(db);
     const now = new Date();
-    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
-    const t2 = { id: "t2", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T10:00:00Z"), fin: new Date("2026-01-01T10:30:00Z"), estado: "confirmado" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as EstadoTurno, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    const t2 = { id: "t2", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T10:00:00Z"), fin: new Date("2026-01-01T10:30:00Z"), estado: "confirmado" as EstadoTurno, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
     await repo.crear(t1);
     await repo.crear(t2);
     const res = await repo.listar({ desde: new Date("2026-01-01T09:15:00Z"), hasta: new Date("2026-01-01T10:15:00Z"), estados: ["pendiente", "confirmado"] });
@@ -199,6 +201,6 @@ describe("sqlite turno repository", () => {
     seed(db);
     const repo = new SqliteTurnoRepository(db);
     const now = new Date();
-    await expect(repo.actualizar({ id: "nope", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date(), fin: new Date(), estado: "pendiente" as any, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now })).rejects.toBeTruthy();
+    await expect(repo.actualizar({ id: "nope", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date(), fin: new Date(), estado: "pendiente" as EstadoTurno, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now })).rejects.toBeTruthy();
   });
 });

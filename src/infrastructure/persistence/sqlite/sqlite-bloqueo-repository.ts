@@ -2,6 +2,7 @@ import type Database from "better-sqlite3";
 import type { BloqueoRepository, FiltrosBloqueo } from "../../../application/ports/bloqueo-repository.js";
 import type { Bloqueo } from "../../../domain/bloqueo/bloqueo.js";
 import type { Intervalo } from "../../../domain/turno/intervalo.js";
+import type { BloqueoRow } from "./row-types.js";
 
 export class SqliteBloqueoRepository implements BloqueoRepository {
   constructor(private readonly db: Database.Database) {}
@@ -25,13 +26,13 @@ export class SqliteBloqueoRepository implements BloqueoRepository {
   }
 
   async buscarPorId(id: string): Promise<Bloqueo | undefined> {
-    const row = this.db.prepare("SELECT * FROM bloqueo WHERE id = ?").get(id) as any;
+    const row = this.db.prepare("SELECT * FROM bloqueo WHERE id = ?").get(id) as BloqueoRow;
     if (!row) return undefined;
     return map(row);
   }
 
   async listar(filtros?: FiltrosBloqueo): Promise<Bloqueo[]> {
-    const rows = this.db.prepare("SELECT * FROM bloqueo ORDER BY inicio, rowid").all() as any[];
+    const rows = this.db.prepare("SELECT * FROM bloqueo ORDER BY inicio, rowid").all() as BloqueoRow[];
     let res = rows.map(map);
     if (filtros?.desde) res = res.filter((b) => b.fin > filtros.desde!);
     if (filtros?.hasta) res = res.filter((b) => b.inicio < filtros.hasta!);
@@ -43,7 +44,7 @@ export class SqliteBloqueoRepository implements BloqueoRepository {
   async buscarSolapadoPorProfesional(profesionalId: string, intervalo: Intervalo): Promise<Bloqueo[]> {
     const rows = this.db
       .prepare("SELECT * FROM bloqueo WHERE profesional_id = ?")
-      .all(profesionalId) as any[];
+      .all(profesionalId) as BloqueoRow[];
     return rows.map(map).filter((b) =>
       b.inicio.getTime() < intervalo.fin.getTime() && b.fin.getTime() > intervalo.inicio.getTime()
     );
@@ -52,7 +53,7 @@ export class SqliteBloqueoRepository implements BloqueoRepository {
   async buscarSolapadoPorSillon(sillonId: string, intervalo: Intervalo): Promise<Bloqueo[]> {
     const rows = this.db
       .prepare("SELECT * FROM bloqueo WHERE sillon_id = ?")
-      .all(sillonId) as any[];
+      .all(sillonId) as BloqueoRow[];
     return rows.map(map).filter((b) =>
       b.inicio.getTime() < intervalo.fin.getTime() && b.fin.getTime() > intervalo.inicio.getTime()
     );
@@ -63,7 +64,7 @@ export class SqliteBloqueoRepository implements BloqueoRepository {
   }
 }
 
-function map(row: any): Bloqueo {
+function map(row: BloqueoRow): Bloqueo {
   return {
     id: row.id,
     profesionalId: row.profesional_id ?? undefined,
