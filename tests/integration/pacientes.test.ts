@@ -42,6 +42,51 @@ describe("Pacientes CRUD", () => {
     expect(res.json().activo).toBe(true);
   });
 
+  it("alta sin documento ni teléfono → 201", async () => {
+    const res = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "Sin", apellido: "Contacto" } });
+    expect(res.statusCode).toBe(201);
+  });
+
+  it("alta con documento de letras → 400 VALIDACION_FALLIDA", async () => {
+    const res = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B", documento: "abcdefgh" } });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().code).toBe("VALIDACION_FALLIDA");
+    expect(res.json().details.documento).toContain("8 números");
+  });
+
+  it("alta con documento de 7 dígitos → 400 VALIDACION_FALLIDA", async () => {
+    const res = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B", documento: "1234567" } });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().code).toBe("VALIDACION_FALLIDA");
+    expect(res.json().details.documento).toContain("8 números");
+  });
+
+  it("alta con documento de 9 dígitos → 400 VALIDACION_FALLIDA", async () => {
+    const res = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B", documento: "123456789" } });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().code).toBe("VALIDACION_FALLIDA");
+    expect(res.json().details.documento).toContain("8 números");
+  });
+
+  it("alta con teléfono de letras → 400 VALIDACION_FALLIDA", async () => {
+    const res = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B", telefono: "abcdefghij" } });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().code).toBe("VALIDACION_FALLIDA");
+    expect(res.json().details.telefono).toContain("10 números");
+  });
+
+  it("alta con teléfono de 9 dígitos → 400 VALIDACION_FALLIDA", async () => {
+    const res = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B", telefono: "123456789" } });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().code).toBe("VALIDACION_FALLIDA");
+    expect(res.json().details.telefono).toContain("10 números");
+  });
+
+  it("alta con documento de 8 dígitos y teléfono de 10 dígitos → 201", async () => {
+    const res = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B", documento: "12345678", telefono: "1123456789" } });
+    expect(res.statusCode).toBe(201);
+  });
+
   it("falta nombre → 400 VALIDACION_FALLIDA", async () => {
     const res = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { apellido: "Demo" } });
     expect(res.statusCode).toBe(400);
@@ -65,8 +110,8 @@ describe("Pacientes CRUD", () => {
   });
 
   it("documento duplicado entre activos → 409 PACIENTE_DUPLICADO", async () => {
-    await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B", documento: "123" } });
-    const res = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "C", apellido: "D", documento: "123" } });
+    await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B", documento: "12345678" } });
+    const res = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "C", apellido: "D", documento: "12345678" } });
     expect(res.statusCode).toBe(409);
     expect(res.json().code).toBe("PACIENTE_DUPLICADO");
     expect(res.json().details.campo).toBe("documento");
@@ -151,17 +196,63 @@ describe("Pacientes CRUD", () => {
   });
 
   it("PATCH con documento duplicado → 409", async () => {
-    const a = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B", documento: "111" } });
-    await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "C", apellido: "D", documento: "222" } });
-    const res = await app.inject({ headers: sesion.headers, method: "PATCH", url: `/api/pacientes/${a.json().id}`, payload: { documento: "222" } });
+    const a = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B", documento: "11111111" } });
+    await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "C", apellido: "D", documento: "22222222" } });
+    const res = await app.inject({ headers: sesion.headers, method: "PATCH", url: `/api/pacientes/${a.json().id}`, payload: { documento: "22222222" } });
     expect(res.statusCode).toBe(409);
     expect(res.json().code).toBe("PACIENTE_DUPLICADO");
   });
 
   it("PATCH a sí mismo → ok", async () => {
-    const r = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B", email: "self@demo.local", documento: "999" } });
+    const r = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B", email: "self@demo.local", documento: "99999999" } });
     const id = r.json().id;
-    const res = await app.inject({ headers: sesion.headers, method: "PATCH", url: `/api/pacientes/${id}`, payload: { email: "self@demo.local", documento: "999" } });
+    const res = await app.inject({ headers: sesion.headers, method: "PATCH", url: `/api/pacientes/${id}`, payload: { email: "self@demo.local", documento: "99999999" } });
+    expect(res.statusCode).toBe(200);
+  });
+
+  it("PATCH con documento de letras → 400 VALIDACION_FALLIDA", async () => {
+    const r = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B" } });
+    const res = await app.inject({ headers: sesion.headers, method: "PATCH", url: `/api/pacientes/${r.json().id}`, payload: { documento: "abcdefgh" } });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().code).toBe("VALIDACION_FALLIDA");
+    expect(res.json().details.documento).toContain("8 números");
+  });
+
+  it("PATCH con documento de 7 dígitos → 400 VALIDACION_FALLIDA", async () => {
+    const r = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B" } });
+    const res = await app.inject({ headers: sesion.headers, method: "PATCH", url: `/api/pacientes/${r.json().id}`, payload: { documento: "1234567" } });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().code).toBe("VALIDACION_FALLIDA");
+    expect(res.json().details.documento).toContain("8 números");
+  });
+
+  it("PATCH con documento de 9 dígitos → 400 VALIDACION_FALLIDA", async () => {
+    const r = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B" } });
+    const res = await app.inject({ headers: sesion.headers, method: "PATCH", url: `/api/pacientes/${r.json().id}`, payload: { documento: "123456789" } });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().code).toBe("VALIDACION_FALLIDA");
+    expect(res.json().details.documento).toContain("8 números");
+  });
+
+  it("PATCH con teléfono de letras → 400 VALIDACION_FALLIDA", async () => {
+    const r = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B" } });
+    const res = await app.inject({ headers: sesion.headers, method: "PATCH", url: `/api/pacientes/${r.json().id}`, payload: { telefono: "abcdefghij" } });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().code).toBe("VALIDACION_FALLIDA");
+    expect(res.json().details.telefono).toContain("10 números");
+  });
+
+  it("PATCH con teléfono de 9 dígitos → 400 VALIDACION_FALLIDA", async () => {
+    const r = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B" } });
+    const res = await app.inject({ headers: sesion.headers, method: "PATCH", url: `/api/pacientes/${r.json().id}`, payload: { telefono: "123456789" } });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().code).toBe("VALIDACION_FALLIDA");
+    expect(res.json().details.telefono).toContain("10 números");
+  });
+
+  it("PATCH con documento de 8 dígitos y teléfono de 10 dígitos → 200", async () => {
+    const r = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "A", apellido: "B" } });
+    const res = await app.inject({ headers: sesion.headers, method: "PATCH", url: `/api/pacientes/${r.json().id}`, payload: { documento: "12345678", telefono: "1123456789" } });
     expect(res.statusCode).toBe(200);
   });
 
@@ -192,13 +283,13 @@ describe("Pacientes CRUD", () => {
   });
 
   it("reactivar con documento duplicado → 409 PACIENTE_DUPLICADO y permanece inactivo", async () => {
-    await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "Activo", apellido: "A", documento: "dupdoc" } });
+    await app.inject({ headers: sesion.headers, method: "POST", url: "/api/pacientes", payload: { nombre: "Activo", apellido: "A", documento: "87654321" } });
     const { randomUUID } = await import("node:crypto");
     const inactivo = {
       id: randomUUID(),
       nombre: "Inactivo",
       apellido: "B",
-      documento: "dupdoc",
+      documento: "87654321",
       activo: false,
       createdAt: new Date(),
       updatedAt: new Date(),
