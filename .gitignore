@@ -27,5 +27,8 @@ data/
 # OpenCode local
 .opencode/
 
+# Capturas y snapshots de Playwright (evidencia local)
+.playwright-mcp/
+
 # Active orchestrator (registry, not versioned)
 .atl/

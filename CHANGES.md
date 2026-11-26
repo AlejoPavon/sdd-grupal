@@ -47,6 +47,9 @@ C-05 + C-06 + C-09
 
 C-06 + C-09
   └── C-17 historia-clinica
+
+C-03 + C-04 + C-05 + C-06 + C-09 (+ C-10 opcional)
+  └── C-20 frontend-basico-profesional
 ```
 
 ### Paralelismo por fase
@@ -94,6 +97,9 @@ GATE 9: C-15 ✓
 GATE 10: C-10 ✓ + C-09 ✓           ← FORK (2 paralelos)
   → C-18 multi-sucursal            [Agente C]
   → C-19 reportes-analitica        [Agente B]
+
+GATE 11: C-03 + C-04 + C-05 + C-06 + C-09 ✓
+  → C-20 frontend-basico-profesional [Nathaniel Herrera]
 ```
 
 ### Camino crítico (7 changes — mínimo irreducible para el MVP)
@@ -104,6 +110,7 @@ C-01 → C-02 → C-03 → C-05 → C-10 → C-11 → C-12
 
 > C-13 (recordatorios) extiende el camino a 8 si se considera parte del lanzamiento.
 > C-04, C-06, C-07, C-08 y C-09 son ramas paralelas que no alargan la cadena.
+> C-20 es trabajo de frontend en paralelo a la entrega del TP: no extiende el camino crítico del backend.
 
 ### Plan óptimo con 3 agentes
 
@@ -119,6 +126,8 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
   7  │ C-12 reserva-online          │ C-18 multi-sucursal         │ C-19 reportes-analitica
   8  │ C-13 recordatorios-whatsapp  │ C-14 pagos-sena             │ —
 ```
+
+> `C-20 frontend-basico-profesional` corre en paralelo, fuera del tablero de los 3 agentes del backend: lo ejecuta Nathaniel Herrera en la ola 6.
 
 ---
 
@@ -479,6 +488,30 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
   - `knowledge-base/01_vision_y_objetivos.md` §Métricas de éxito
   - `knowledge-base/05_reglas_de_negocio.md` §RN-AD-01
 
+### [C-20] `frontend-basico-profesional`
+- **Estado**: `[x]` completado (2026-11-25)
+- **Responsable**: Nathaniel Herrera
+- **Scope**: Cliente web sencillo con acabado profesional sobre la API REST existente
+  - SPA estática servida por Fastify (o servidor estático), sin lógica de negocio nueva: la API sigue siendo la única fuente de reglas
+  - Login/logout con la cookie de sesión existente (`POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`) y manejo de `401`
+  - Pantallas: agenda (consultar turnos por profesional y rango), alta y búsqueda de pacientes, crear y cancelar turno, catálogos de profesionales/sillones/prestaciones; bloqueos solo para roles de gestión
+  - Errores de negocio con `{ code, message, details }`, estados de carga y vacío, confirmación antes de cancelar y fechas ISO 8601 UTC presentadas en `America/Argentina/Buenos_Aires`
+  - Interfaz responsive (390x844 y 1440x900), tokens visuales consistentes, foco visible, contraste suficiente y `prefers-reduced-motion`; solo datos ficticios de pacientes (RN-PA-04)
+  - Tests: flujos críticos con Vitest, sin errores de consola ni requests fallidos; capturas mobile/desktop como evidencia
+- **Dependencias**: C-03, C-04, C-05, C-06, C-09 (C-10 opcional para la demo con persistencia)
+- **Governance**: MEDIO
+- **Leer antes**:
+  - `knowledge-base/06_funcionalidades.md` §Historias de usuario de agenda y pacientes
+  - `knowledge-base/07_flujos_principales.md` §Flujos principales
+  - `knowledge-base/03_actores_y_roles.md` §RBAC y permisos
+  - `knowledge-base/05_reglas_de_negocio.md` §RN-AG-*, RN-TU-*, RN-PA-04
+  - `AGENTS.md` §Reglas Duras (códigos de error estables, fechas ISO 8601 UTC, datos ficticios)
+- **Evidencia**:
+  - Ciclo SDD archivado: [`openspec/changes/archive/2026-11-25-frontend-basico-profesional/`](openspec/changes/archive/2026-11-25-frontend-basico-profesional/) y spec principal [`interfaz-web`](openspec/specs/interfaz-web/spec.md).
+  - `npm test`: 48 archivos / 403 tests en verde; `npm run typecheck` y `npm run lint` sin errores.
+  - Verificación en navegador a 390x844 y 1440x900: login, sesión restaurada, alta/búsqueda de pacientes, crear turno, conflicto `409`, cancelar con confirmación y logout; sin errores de consola ni requests fallidos. Capturas locales en `.playwright-mcp/c20-*.png` (gitignored).
+  - Política visual `off`: sin gate de sistema visual ni mockups; registrado en `design.md` del cambio.
+
 ---
 
 ## Resumen
@@ -493,20 +526,21 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
 | 5 — Persistencia | C-10 | SQLite |
 | 6 — Reserva y automatización | C-11, C-12, C-13, C-14 | Disponibilidad, reserva, WhatsApp, seña |
 | 7 — Gestión y clínica | C-15, C-16, C-17, C-18, C-19 | ARCA, obras sociales, historia clínica, multi-sucursal, reportes |
+| 8 — Frontend | C-20 | Cliente web responsive con acabado profesional sobre la API |
 
-**Total: 19 changes.** El MVP demostrable se cierra con C-01 a C-06; el producto operable con C-07 a C-12.
+**Total: 20 changes.** El MVP demostrable se cierra con C-01 a C-06; el producto operable con C-07 a C-12.
 
 ### Asignación por integrante (entrega grupal de 5)
 
 | Integrante | Changes asignados | Ola | Guía |
 |---|---|---|---|
 | Alejo Pavon | Fundación: Discovery, KB, roadmap, estado + integración de PRs | 0 y 6 | [`docs/equipo/alejo-pavon.md`](docs/equipo/alejo-pavon.md) |
-| Nathaniel Herrera | C-01, C-02 | 1 | [`docs/equipo/nathaniel-herrera.md`](docs/equipo/nathaniel-herrera.md) |
+| Nathaniel Herrera | C-01, C-02, C-20 | 1 y 6 | [`docs/equipo/nathaniel-herrera.md`](docs/equipo/nathaniel-herrera.md) |
 | Lucas Timmermann | C-03, C-04, C-05 | 2 y 3 | [`docs/equipo/lucas-timmermann.md`](docs/equipo/lucas-timmermann.md) |
 | Aracelly Caballero | C-06, C-10 | 2 y 4 | [`docs/equipo/aracelly-caballero.md`](docs/equipo/aracelly-caballero.md) |
 | Javier Alaniz | C-09, C-07, C-08 | 3, 4 y 5 | [`docs/equipo/javier-alaniz.md`](docs/equipo/javier-alaniz.md) |
 
-> C-11 a C-19 quedan **fuera del alcance del TP**: son la evolución posterior del producto (reserva online, WhatsApp, pagos, ARCA, historia clínica, multi-sucursal y reportes). No asignarlos para esta entrega.
+> C-11 a C-19 quedan **fuera del alcance del TP**: son la evolución posterior del producto (reserva online, WhatsApp, pagos, ARCA, historia clínica, multi-sucursal y reportes). No asignarlos para esta entrega; la excepción es `C-20`, trabajo de frontend incorporado y asignado a Nathaniel Herrera.
 > Reglas de trabajo, orden de integración y convenciones compartidas: [`docs/equipo/README.md`](docs/equipo/README.md).
 
 ### Primer item elegible

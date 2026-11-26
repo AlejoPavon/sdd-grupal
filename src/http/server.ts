@@ -11,6 +11,7 @@ import { InMemoryUsuarioRepository } from "../infrastructure/persistence/in-memo
 import type { Repositorios } from "../application/ports/repositorios.js";
 import { registrarErrorHandler } from "./error-handler.js";
 import { registrarAuthPlugin } from "./plugins/auth.js";
+import { registrarFrontend } from "./routes/frontend.js";
 import { registrarRutasAuth } from "./routes/auth.js";
 import { registrarRutasBloqueos } from "./routes/bloqueos.js";
 import { registrarRutasCatalogos } from "./routes/catalogos.js";
@@ -48,6 +49,7 @@ export function buildServer(repos?: Partial<Repositorios>, opciones: OpcionesSer
 
   app.get("/health", async () => ({ status: "ok" }));
 
+  registrarFrontend(app);
   registrarErrorHandler(app);
   registrarAuthPlugin(app, repositorios);
   registrarRutasAuth(app, repositorios, { sessionTtlMs });
