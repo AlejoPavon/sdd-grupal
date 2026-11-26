@@ -10,7 +10,7 @@
       "system_type": "web_app (API REST)",
       "domain": "salud / gestion de turnos odontologicos",
       "scale": "team (consultorio con recepcion y varios profesionales); public_multi_user futuro",
-      "stack": "Node.js 20 LTS + TypeScript 5 + Fastify 4 + Zod + Vitest; persistencia en memoria en el MVP",
+      "stack": "Node.js 22.13+/24 LTS + TypeScript 5 + Fastify 5 + Zod 4 + Vitest 5; persistencia en memoria por default (PERSISTENCE=memory) y SQLite opcional (PERSISTENCE=sqlite, C-10)",
       "needs_infra": false
     },
     "files": [
@@ -65,7 +65,7 @@
       "Reglas solapamiento en dominio (RN-AG-*)",
       "Errores con codigo estable + shape JSON",
       "Fechas ISO 8601 UTC; intervalos semiabiertos",
-      "Persistencia en memoria via *Repository en v0.1",
+      "Dominio/aplicacion sin acoplamiento a DB; persistencia detras de puertos *Repository; memoria default y SQLite opcional (C-10)",
       "Datos de pacientes ficticios",
       "TDD con Vitest",
       "No build/commit/push sin pedido",
