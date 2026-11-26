@@ -16,6 +16,14 @@
       "sessions": 1,
       "memories": 1,
       "prompts": 0
+    },
+    {
+      "id": "cda16570",
+      "created_by": "javier",
+      "created_at": "2026-11-26T01:47:05.842374815Z",
+      "sessions": 1,
+      "memories": 1,
+      "prompts": 0
     }
   ]
 }
