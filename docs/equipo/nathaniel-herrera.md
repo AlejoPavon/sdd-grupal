@@ -1,12 +1,12 @@
-# Nathaniel Herrera — Cimientos (C-01 y C-02)
+# Nathaniel Herrera — Cimientos y frontend (C-01, C-02 y C-20)
 
 ## Tu rol
 
-Sos la base técnica del equipo. Sin tu primer PR nadie más puede empezar. Tu trabajo define el esqueleto del proyecto y el contrato de dominio que Lucas, Aracelly y Javier van a usar.
+Sos la base técnica del equipo y, en la ola 6, el responsable del cliente web. Tu primer PR define el esqueleto del proyecto y el contrato de dominio que Lucas, Aracelly y Javier van a usar; tu trabajo de frontend cierra la entrega con una interfaz profesional sobre la API existente.
 
-**Ola:** 1 (bloqueante para todos).
-**Changes:** `C-01 foundation-setup` y `C-02 core-domain-models`.
-**Guía canónica:** [`CHANGES.md`](../../CHANGES.md) §C-01 y §C-02.
+**Ola:** 1 (bloqueante para todos) y 6 (frontend C-20).
+**Changes:** `C-01 foundation-setup`, `C-02 core-domain-models` y `C-20 frontend-basico-profesional`.
+**Guía canónica:** [`CHANGES.md`](../../CHANGES.md) §C-01, §C-02 y §C-20.
 
 ## Antes de empezar
 
@@ -32,6 +32,8 @@ Hacé **dos PRs separados**:
 2. Cuando el PR 1 esté mergeado: `git switch main && git pull --rebase && git switch -c feat/c-02-core-domain` → `C-02`.
 
 No mezcles los dos changes en un solo PR: si C-01 tiene un problema, C-02 no debería quedar bloqueado.
+
+Para C-20 se trabajó en la rama dedicada `C-20-FrontEnd`, sin push directo a `main`. La integración se hace por Pull Request tras `npm run typecheck` y `npm test`.
 
 ---
 
@@ -200,6 +202,53 @@ test(domain): cubrir solapamientos, bordes y transiciones
 
 ---
 
+## C-20 — `frontend-basico-profesional`
+
+### Objetivo
+
+Dejar un cliente web responsive que opere agenda, pacientes y bloqueos sobre la API REST existente, sin mover reglas de negocio al frontend.
+
+**Estado:** completado el 2026-11-25. **Rama:** `C-20-FrontEnd` (sin push directo a `main`).
+
+### Archivos que te pertenecen
+
+- `web/index.html`, `web/styles.css`, `web/app.js`, `web/helpers.js`
+- `src/http/routes/frontend.ts` y el registro en `src/http/server.ts`
+- `tests/unit/web/helpers.test.js` y `tests/integration/frontend.test.ts`
+- `vitest.config.ts` y `.gitignore`
+- `CHANGES.md` §C-20
+- `openspec/changes/archive/2026-11-25-frontend-basico-profesional/` y `openspec/specs/interfaz-web/spec.md`
+
+### Implementación
+
+1. Servir la SPA desde Fastify con una lista explícita de cinco rutas, sin exponer archivos del repositorio y sin tocar `/health` ni `/api/*`.
+2. Login, restauración de sesión y logout sobre la cookie existente, con retorno al acceso ante `401`.
+3. Agenda con filtros, alta/búsqueda de pacientes, creación y cancelación de turnos, y consulta de bloqueos solo para roles de gestión.
+4. Interpretar la fecha y hora del formulario en `America/Argentina/Buenos_Aires` y enviar `inicio` como ISO 8601 UTC con intervalo `[inicio, fin)`.
+5. Traducir `{ code, message, details }` a mensajes legibles, incluido el turno en conflicto; pedir confirmación antes de cancelar.
+6. Estilos responsive, foco visible, contraste suficiente y `prefers-reduced-motion`. La política visual del proyecto está en `off`, por lo que no hubo gate de sistema visual ni mockups.
+
+### Verificación
+
+```bash
+npm test
+npm run typecheck
+npm run lint
+```
+
+Resultado: **48 archivos / 403 tests en verde**; `typecheck` y `lint` sin errores. Flujo verificado en navegador a 390x844 y 1440x900: login, sesión restaurada, alta/búsqueda de pacientes, crear turno, conflicto `409`, cancelar con confirmación, logout y requests `/api/*` sin fallos ni errores de consola. Capturas locales en `.playwright-mcp/c20-*.png` (gitignored).
+
+### Criterios de aceptación
+
+- [x] Cliente servido por Fastify sin exponer archivos del repo: `/` responde HTML y `/package.json` responde `404`.
+- [x] Sesión y visibilidad por rol sobre la API; un `401` devuelve al acceso.
+- [x] Agenda, pacientes y turnos operables; bloqueos solo para `administrador` y `recepcionista`.
+- [x] Fechas presentadas en la zona del consultorio y enviadas en ISO 8601 UTC.
+- [x] Sin errores de consola ni requests fallidos; capturas mobile/desktop guardadas.
+- [x] Ciclo SDD completo: propuesta, specs, diseño, tareas, spec `interfaz-web` sincronizada y cambio archivado.
+
+---
+
 ## Evidencia para la defensa
 
 Guardá y mostrá:
@@ -209,12 +258,14 @@ Guardá y mostrá:
 3. Explicación en 1 minuto del predicado `inicio < otro.fin && fin > otro.inicio` y por qué el caso `09:30` no es conflicto.
 4. El árbol de carpetas de `src/` y por qué el dominio está separado de Fastify.
 5. Qué decisión tomaste con `NodeNext` y los imports `.js`.
+6. `git log --oneline C-20-FrontEnd` con el cierre de C-20, el cambio SDD archivado y las capturas `.playwright-mcp/c20-*.png`.
 
 ## Definition of Done
 
 - [ ] C-01 y C-02 mergeados en `main` con tus commits.
+- [x] C-20 completado, con ciclo SDD archivado y spec `interfaz-web` sincronizada; pendiente de integración desde `C-20-FrontEnd` vía PR.
 - [ ] `npm ci && npm run typecheck && npm test` pasa en `main`.
-- [ ] Avisaste al equipo que la ola 2 está desbloqueada.
+- [ ] Avisaste al equipo que la ola 2 está desbloqueada y que el frontend está listo para revisión.
 - [ ] Tu nombre aparece como autor en `git log`.
 
 ## No tocar
@@ -222,3 +273,4 @@ Guardá y mostrá:
 - No implementes endpoints de turnos, pacientes, auth, bloqueos ni sobreturnos: son de Lucas, Aracelly y Javier.
 - No agregues base de datos: C-10 es de Aracelly.
 - No cambies las reglas de negocio de la KB para que tu código pase. Si algo no cierra, consultá al equipo.
+- No muevas reglas de solapamiento, duración ni permisos al cliente: la API sigue siendo la única fuente de reglas.

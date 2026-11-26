@@ -489,7 +489,7 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
   - `knowledge-base/05_reglas_de_negocio.md` §RN-AD-01
 
 ### [C-20] `frontend-basico-profesional`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado (2026-11-25)
 - **Responsable**: Nathaniel Herrera
 - **Scope**: Cliente web sencillo con acabado profesional sobre la API REST existente
   - SPA estática servida por Fastify (o servidor estático), sin lógica de negocio nueva: la API sigue siendo la única fuente de reglas
@@ -506,6 +506,11 @@ Paso │ Agente A (Dominio/API)      │ Agente B (Datos/Pacientes)  │ Agente 
   - `knowledge-base/03_actores_y_roles.md` §RBAC y permisos
   - `knowledge-base/05_reglas_de_negocio.md` §RN-AG-*, RN-TU-*, RN-PA-04
   - `AGENTS.md` §Reglas Duras (códigos de error estables, fechas ISO 8601 UTC, datos ficticios)
+- **Evidencia**:
+  - Ciclo SDD archivado: [`openspec/changes/archive/2026-11-25-frontend-basico-profesional/`](openspec/changes/archive/2026-11-25-frontend-basico-profesional/) y spec principal [`interfaz-web`](openspec/specs/interfaz-web/spec.md).
+  - `npm test`: 48 archivos / 403 tests en verde; `npm run typecheck` y `npm run lint` sin errores.
+  - Verificación en navegador a 390x844 y 1440x900: login, sesión restaurada, alta/búsqueda de pacientes, crear turno, conflicto `409`, cancelar con confirmación y logout; sin errores de consola ni requests fallidos. Capturas locales en `.playwright-mcp/c20-*.png` (gitignored).
+  - Política visual `off`: sin gate de sistema visual ni mockups; registrado en `design.md` del cambio.
 
 ---
 
