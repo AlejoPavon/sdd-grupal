@@ -15,6 +15,7 @@ export interface ListarTurnosFiltros {
   hasta?: Date | string;
   profesionalId?: string;
   sillonId?: string;
+  pacienteId?: string;
 }
 
 function toDate(v: Date | string | undefined): Date | undefined {
@@ -69,6 +70,7 @@ export class ListarTurnos {
         hasta: args[1] as Date | string,
         profesionalId: args[2] as string | undefined,
         sillonId: args[3] as string | undefined,
+        pacienteId: args[4] as string | undefined,
       };
     } else if (args.length === 1 && args[0] !== undefined) {
       // single non-object positional? treat as desde? unlikely; keep as filtros? 
@@ -87,7 +89,7 @@ export class ListarTurnos {
       hasta,
       profesionalId: filtros.profesionalId,
       sillonId: filtros.sillonId,
-      estados: ["pendiente", "confirmado"],
+      pacienteId: filtros.pacienteId,
     });
 
     const result: TurnoEnriquecido[] = [];

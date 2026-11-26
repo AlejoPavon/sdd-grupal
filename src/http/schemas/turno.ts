@@ -19,6 +19,7 @@ export const turnoQuerySchema = z.object({
   hasta: z.iso.datetime().optional(),
   profesionalId: z.uuid().optional(),
   sillonId: z.uuid().optional(),
+  pacienteId: z.uuid().optional(),
 });
 
 export type TurnoQuery = z.infer<typeof turnoQuerySchema>;

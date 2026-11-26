@@ -51,6 +51,7 @@ export function registrarRutasTurnos(app: FastifyInstance, repos: Repositorios):
       hasta: query.hasta ? new Date(query.hasta) : undefined,
       profesionalId: query.profesionalId,
       sillonId: query.sillonId,
+      pacienteId: query.pacienteId,
     });
     return reply.send(turnos);
   });

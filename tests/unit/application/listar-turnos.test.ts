@@ -91,13 +91,24 @@ describe("ListarTurnos", () => {
     expect(result[0]!.sillonId).toBe(SEED_IDS.sillon1);
   });
 
-  it("excluye turnos cancelados", async () => {
+  it("incluye turnos cancelados en la lista general", async () => {
     const turno = await crearTurno("2027-01-15T09:00:00.000Z");
     await repos.turnos.actualizar({ ...turno, estado: "cancelado" });
 
     const listar = new ListarTurnos(repos);
     const result = await listar.execute();
-    expect(result).toHaveLength(0);
+    expect(result).toHaveLength(1);
+    expect(result[0]!.estado).toBe("cancelado");
+  });
+
+  it("filtra por paciente", async () => {
+    await crearTurno("2027-01-15T09:00:00.000Z");
+    await crearTurno("2027-01-15T10:00:00.000Z", { pacienteId: SEED_IDS.paciente2 });
+
+    const listar = new ListarTurnos(repos);
+    const result = await listar.execute({ pacienteId: SEED_IDS.paciente1 });
+    expect(result).toHaveLength(1);
+    expect(result[0]!.pacienteId).toBe(SEED_IDS.paciente1);
   });
 
   it("enriquece con paciente y prestacion", async () => {

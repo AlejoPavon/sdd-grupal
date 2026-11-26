@@ -293,7 +293,7 @@ describe("GET /api/turnos", () => {
     expect(res.json().code).toBe("RANGO_INVALIDO");
   });
 
-  it("excluye turnos cancelados", async () => {
+  it("incluye turnos cancelados", async () => {
     const r = await crearTurno(baseBody());
     const id = r.json().id;
     const turno = await repos.turnos.buscarPorId(id);
@@ -305,7 +305,38 @@ describe("GET /api/turnos", () => {
       url: "/api/turnos?desde=2027-01-15T08:00:00.000Z&hasta=2027-01-15T12:00:00.000Z",
     });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toHaveLength(0);
+    expect(res.json()).toHaveLength(1);
+    expect(res.json()[0].estado).toBe("cancelado");
+  });
+
+  it("lista general devuelve todos los estados", async () => {
+    const r = await crearTurno(baseBody());
+    const turno = await repos.turnos.buscarPorId(r.json().id);
+    await repos.turnos.actualizar({ ...turno!, estado: "atendido" });
+
+    const res = await app.inject({
+      headers: sesion.headers,
+      method: "GET",
+      url: "/api/turnos",
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toHaveLength(1);
+    expect(res.json()[0].estado).toBe("atendido");
+  });
+
+  it("filtra por paciente", async () => {
+    await crearTurno(baseBody());
+    await crearTurno({ ...baseBody(), pacienteId: SEED_IDS.paciente2, inicio: "2027-01-15T10:00:00.000Z" });
+
+    const res = await app.inject({
+      headers: sesion.headers,
+      method: "GET",
+      url: `/api/turnos?pacienteId=${SEED_IDS.paciente1}`,
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body).toHaveLength(1);
+    expect(body[0].pacienteId).toBe(SEED_IDS.paciente1);
   });
 
   it("enriquece respuesta con paciente y prestacion", async () => {

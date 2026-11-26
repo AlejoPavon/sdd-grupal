@@ -71,6 +71,7 @@ export class SqliteTurnoRepository implements TurnoRepository {
     let res = rows.map(map);
     if (filtros?.profesionalId) res = res.filter((t) => t.profesionalId === filtros.profesionalId);
     if (filtros?.sillonId) res = res.filter((t) => t.sillonId === filtros.sillonId);
+    if (filtros?.pacienteId) res = res.filter((t) => t.pacienteId === filtros.pacienteId);
     if (filtros?.desde) res = res.filter((t) => t.fin.getTime() > filtros.desde!.getTime());
     if (filtros?.hasta) res = res.filter((t) => t.inicio.getTime() < filtros.hasta!.getTime());
     if (filtros?.estados) res = res.filter((t) => filtros.estados!.includes(t.estado));
