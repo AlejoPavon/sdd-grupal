@@ -75,6 +75,20 @@ export function rangoDelDia(fecha) {
   return { desde: desde.toISOString(), hasta: new Date(desde.getTime() + MS_POR_DIA).toISOString() };
 }
 
+/** Días completos de la zona de negocio como intervalo UTC con el último día inclusive. */
+export function rangoDeBloqueo(desde, hasta) {
+  const { desde: inicio } = rangoDelDia(desde);
+  const { hasta: fin } = rangoDelDia(hasta);
+  if (desde >= hasta) throw new Error("Revisá las fechas: la fecha hasta debe ser posterior a la fecha desde.");
+  return { inicio, fin };
+}
+
+/** Cuerpo exacto de POST /api/bloqueos; los días del formulario se convierten al rango UTC. */
+export function cuerpoBloqueo(datos) {
+  const { inicio, fin } = rangoDeBloqueo(datos.desde, datos.hasta);
+  return { profesionalId: datos.profesionalId, inicio, fin, motivo: datos.motivo };
+}
+
 /** `YYYY-MM-DDTHH:mm` del formulario se interpreta en la zona de negocio. */
 export function isoDesdeLocal(valor) {
   const coincidencia = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(valor ?? "");
@@ -111,7 +125,7 @@ export function cargasPorVista(vista) {
     case "nuevo-turno":
       return ["catalogos", "pacientes"];
     case "bloqueos":
-      return ["bloqueos"];
+      return ["catalogos", "bloqueos"];
     default:
       return [];
   }
@@ -124,4 +138,96 @@ export function escapar(valor) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+export function persona(item) {
+  return `${item.nombre} ${item.apellido ?? ""}`.trim();
+}
+
+export function opcionesSelect(items, seleccionado, textoVacio, etiqueta = (item) => item.nombre) {
+  const inicio = textoVacio ? `<option value="">${escapar(textoVacio)}</option>` : "";
+  return (
+    inicio +
+    items
+      .map((item) => {
+        const marcado = item.id === seleccionado ? " selected" : "";
+        return `<option value="${escapar(item.id)}"${marcado}>${escapar(etiqueta(item))}</option>`;
+      })
+      .join("")
+  );
+}
+
+export function htmlFormularioBloqueo(profesionales, hoy) {
+  return `<form class="card form" data-formulario="nuevo-bloqueo">
+    <h2>Nuevo bloqueo</h2>
+    <label>Profesional
+      <select name="profesionalId" required>${opcionesSelect(profesionales, "", "Seleccioná un profesional", persona)}</select>
+    </label>
+    <label>Desde
+      <input name="desde" type="date" value="${escapar(hoy)}" required />
+    </label>
+    <label>Hasta
+      <input name="hasta" type="date" value="${escapar(hoy)}" required />
+    </label>
+    <label>Motivo
+      <input name="motivo" required />
+    </label>
+    <button class="primary" type="submit">Guardar bloqueo</button>
+  </form>`;
+}
+
+function nombreEnCatalogo(items, id) {
+  return items.find((item) => item.id === id)?.nombre ?? id;
+}
+
+export function rutaEliminarBloqueo(id) {
+  return `/api/bloqueos/${encodeURIComponent(id)}`;
+}
+
+/** Solo administración puede borrar; el servidor sigue siendo la autoridad. */
+export function puedeEliminarBloqueo(rol) {
+  return esGestion(rol) && rol === "administrador";
+}
+
+/** Ejemplo de presentación: nunca se envía a la API ni se agrega al estado. */
+export function bloqueoEjemplo(profesionales) {
+  const primero = profesionales[0];
+  if (!primero) return null;
+  return {
+    id: "ejemplo",
+    profesionalId: primero.id,
+    sillonId: null,
+    inicio: "2027-03-15T03:00:00.000Z",
+    fin: "2027-03-17T12:00:00.000Z",
+    motivo: "Ejemplo: bloqueo de profesional del 15 al 17 de marzo",
+    ejemplo: true,
+  };
+}
+
+export function htmlFilaBloqueo(bloqueo, opciones = {}) {
+  const { profesionales = [], sillones = [], puedeEliminar = false } = opciones;
+  const profesional = bloqueo.profesionalId ? nombreEnCatalogo(profesionales, bloqueo.profesionalId) : "—";
+  const sillon = bloqueo.sillonId ? nombreEnCatalogo(sillones, bloqueo.sillonId) : "—";
+  const etiqueta = bloqueo.ejemplo ? '<span class="badge">Ejemplo</span> ' : "";
+  const accion =
+    puedeEliminar && !bloqueo.ejemplo
+      ? `<button class="danger" data-accion="eliminar-bloqueo" data-id="${escapar(bloqueo.id)}">Eliminar</button>`
+      : "—";
+  return `<tr${bloqueo.ejemplo ? ' class="muted"' : ""}>
+    <td>${escapar(formatearFecha(bloqueo.inicio))}</td>
+    <td>${escapar(formatearHora(bloqueo.inicio))} – ${escapar(formatearHora(bloqueo.fin))}</td>
+    <td>${etiqueta}${escapar(profesional)}</td>
+    <td>${escapar(sillon)}</td>
+    <td>${escapar(bloqueo.motivo)}</td>
+    <td>${accion}</td>
+  </tr>`;
+}
+
+/** Cuerpo de la tabla: el ejemplo va primero y no altera los bloqueos reales. */
+export function htmlCuerpoBloqueos(bloqueos, profesionales, opciones = {}) {
+  const ejemplo = bloqueoEjemplo(profesionales);
+  return [
+    ...(ejemplo ? [htmlFilaBloqueo(ejemplo, { profesionales, ...opciones })] : []),
+    ...bloqueos.map((bloqueo) => htmlFilaBloqueo(bloqueo, { profesionales, ...opciones })),
+  ].join("");
 }

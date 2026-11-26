@@ -1,14 +1,20 @@
 import {
   cargasPorVista,
+  cuerpoBloqueo,
   detalleConflicto,
   escapar,
   esGestion,
-  formatearFecha,
   formatearHora,
   hoyEnZona,
+  htmlCuerpoBloqueos,
+  htmlFormularioBloqueo,
   isoDesdeLocal,
   mensajeError,
+  opcionesSelect,
+  persona,
+  puedeEliminarBloqueo,
   rangoDelDia,
+  rutaEliminarBloqueo,
 } from "./helpers.js";
 
 const ROL = {
@@ -83,29 +89,12 @@ function manejarError(error) {
   }
 }
 
-function persona(item) {
-  return `${item.nombre} ${item.apellido ?? ""}`.trim();
-}
-
 function nombreProfesional(id) {
   return estado.profesionales.find((item) => item.id === id)?.nombre ?? id;
 }
 
 function nombreSillon(id) {
   return estado.sillones.find((item) => item.id === id)?.nombre ?? id;
-}
-
-function opcionesSelect(items, seleccionado, textoVacio, etiqueta = (item) => item.nombre) {
-  const inicio = textoVacio ? `<option value="">${escapar(textoVacio)}</option>` : "";
-  return (
-    inicio +
-    items
-      .map((item) => {
-        const marcado = item.id === seleccionado ? " selected" : "";
-        return `<option value="${escapar(item.id)}"${marcado}>${escapar(etiqueta(item))}</option>`;
-      })
-      .join("")
-  );
 }
 
 function navegacion() {
@@ -291,27 +280,18 @@ function vistaBloqueos() {
     return `${navegacion()}<section class="page"><div class="card"><h1>Sin permiso</h1><p class="muted">Solo administración y recepción pueden ver los bloqueos.</p></div></section>`;
   }
 
-  if (estado.bloqueos.length === 0) {
-    return `${navegacion()}<section class="page"><div class="page-head"><p class="eyebrow">Agenda</p><h1>Bloqueos</h1></div><div class="card"><p class="empty">No hay bloqueos registrados.</p></div></section>`;
-  }
-
-  const filas = estado.bloqueos
-    .map(
-      (bloqueo) => `<tr>
-        <td>${escapar(formatearFecha(bloqueo.inicio))}</td>
-        <td>${escapar(formatearHora(bloqueo.inicio))} – ${escapar(formatearHora(bloqueo.fin))}</td>
-        <td>${escapar(bloqueo.profesionalId ? nombreProfesional(bloqueo.profesionalId) : "—")}</td>
-        <td>${escapar(bloqueo.sillonId ? nombreSillon(bloqueo.sillonId) : "—")}</td>
-        <td>${escapar(bloqueo.motivo)}</td>
-      </tr>`,
-    )
-    .join("");
+  const vacio = estado.bloqueos.length === 0 ? '<p class="empty">No hay bloqueos registrados.</p>' : "";
+  const filas = htmlCuerpoBloqueos(estado.bloqueos, estado.profesionales, {
+    sillones: estado.sillones,
+    puedeEliminar: puedeEliminarBloqueo(estado.usuario.rol),
+  });
 
   return `${navegacion()}
   <section class="page">
     <div class="page-head"><p class="eyebrow">Agenda</p><h1>Bloqueos</h1></div>
-    <div class="card table-card"><table>
-      <thead><tr><th>Fecha</th><th>Horario</th><th>Profesional</th><th>Sillón</th><th>Motivo</th></tr></thead>
+    ${htmlFormularioBloqueo(estado.profesionales, hoyEnZona())}
+    <div class="card table-card">${vacio}<table>
+      <thead><tr><th>Fecha</th><th>Horario</th><th>Profesional</th><th>Sillón</th><th>Motivo</th><th>Acciones</th></tr></thead>
       <tbody>${filas}</tbody>
     </table></div>
   </section>`;
@@ -419,6 +399,24 @@ document.addEventListener("click", async (evento) => {
     }
     render();
   }
+
+  if (boton.dataset.accion === "eliminar-bloqueo") {
+    if (!puedeEliminarBloqueo(estado.usuario?.rol)) return;
+    try {
+      await api(rutaEliminarBloqueo(boton.dataset.id ?? ""), { method: "DELETE" });
+      notificar("Bloqueo eliminado", "exito");
+    } catch (error) {
+      manejarError(error);
+    }
+    if (estado.usuario) {
+      try {
+        await cargarBloqueos();
+      } catch (error) {
+        manejarError(error);
+      }
+    }
+    render();
+  }
 });
 
 document.addEventListener("submit", async (evento) => {
@@ -469,6 +467,13 @@ document.addEventListener("submit", async (evento) => {
         notificar("Turno guardado", "exito");
         estado.vista = "agenda";
         await cargarAgenda();
+        break;
+      }
+      case "nuevo-bloqueo": {
+        const cuerpo = cuerpoBloqueo(datos);
+        await api("/api/bloqueos", { method: "POST", body: JSON.stringify(cuerpo) });
+        notificar("Bloqueo guardado", "exito");
+        await cargarBloqueos();
         break;
       }
     }
