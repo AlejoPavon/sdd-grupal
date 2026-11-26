@@ -11,7 +11,8 @@ await seedIfNeeded(repos);
 const app = buildServer(repos);
 
 try {
-  await app.listen({ port, host: "0.0.0.0" });
+  const address = await app.listen({ port, host: "0.0.0.0" });
+  console.log(`Servidor corriendo en ${address}`);
 } catch (error) {
   console.error(error);
   process.exit(1);
