@@ -192,40 +192,6 @@ El sistema SHALL validar primero el solapamiento por profesional y, si existe, r
 - **WHEN** un turno nuevo solapa tanto con un turno del mismo profesional como con uno del mismo sillón
 - **THEN** la respuesta es `TURNO_SOLAPADO_PROFESIONAL`
 
-### Requirement: Consultar agenda por rango
-
-El sistema SHALL devolver, mediante `GET /api/turnos`, los turnos activos (estado `pendiente` o `confirmado`) cuyo intervalo intersecta el rango indicado, filtrables por `profesionalId` y/o `sillonId`, ordenados por `inicio` ascendente, incluyendo un resumen del paciente y de la prestación.
-
-#### Scenario: Consulta por rango
-
-- **WHEN** se envía `GET /api/turnos?desde=...&hasta=...` con un rango válido
-- **THEN** se responde `200` con la lista de turnos activos que intersectan el rango, ordenados por `inicio` ascendente
-
-#### Scenario: Filtro por profesional
-
-- **WHEN** se envía `GET /api/turnos` con `profesionalId`
-- **THEN** la respuesta incluye solo los turnos de ese profesional
-
-#### Scenario: Filtro por sillón
-
-- **WHEN** se envía `GET /api/turnos` con `sillonId`
-- **THEN** la respuesta incluye solo los turnos de ese sillón
-
-#### Scenario: Filtros combinados
-
-- **WHEN** se envían `profesionalId` y `sillonId` juntos
-- **THEN** la respuesta incluye solo los turnos que cumplen ambos filtros
-
-#### Scenario: Exclusión de turnos no activos
-
-- **WHEN** existen turnos en estado `cancelado`, `atendido` o `ausente` en el rango
-- **THEN** no aparecen en la respuesta
-
-#### Scenario: Enriquecimiento de respuesta
-
-- **WHEN** se devuelve la lista de turnos
-- **THEN** cada item incluye un resumen del paciente (`id`, `nombre`, `apellido`) y de la prestación (`id`, `codigo`, `nombre`, `duracionMinutos`)
-
 ### Requirement: Validación de rango de consulta
 
 El sistema SHALL rechazar con `400` y código `RANGO_INVALIDO` cuando se envían `desde` y `hasta` y `desde` es mayor o igual a `hasta`.
@@ -647,3 +613,62 @@ El sistema SHALL mantener las validaciones de solapamiento y bloqueo del sillón
 - **WHEN** un rol autorizado envía `POST /api/turnos` con `esSobreturno: true`
 - **THEN** se responde `409` con código `TURNO_SOLAPADO_SILLON`
 - **AND** no se evalúa el solapamiento del profesional
+
+### Requirement: Turno no puede crearse en el pasado
+
+El sistema SHALL rechazar con 400 y c�digo TURNO_EN_EL_PASADO cuando el inicio del turno es anterior al momento actual, sin persistir ning�n turno.
+
+#### Scenario: Inicio en el pasado
+
+- **WHEN** se env�a POST /api/turnos con un inicio anterior al momento actual
+- **THEN** el sistema responde 400 con c�digo TURNO_EN_EL_PASADO
+- **AND** no se persiste ning�n turno
+
+#### Scenario: Inicio igual al momento actual es v�lido
+
+- **WHEN** se env�a POST /api/turnos con un inicio igual al momento actual y datos v�lidos
+- **THEN** el turno puede crearse (no se rechaza por fecha pasada)
+
+### Requirement: Consultar turnos registrados
+
+El sistema SHALL devolver, mediante `GET /api/turnos`, todos los turnos registrados (cualquier estado) cuyo intervalo intersecta el rango indicado cuando se envían `desde` y/o `hasta`, filtrables por `profesionalId`, `sillonId` y/o `pacienteId`, ordenados por `inicio` ascendente, incluyendo un resumen del paciente y de la prestación. Sin filtros, SHALL devolver todos los turnos registrados.
+
+#### Scenario: Lista general
+
+- **WHEN** se envía `GET /api/turnos` sin filtros
+- **THEN** se responde `200` con todos los turnos registrados, de cualquier estado, ordenados por `inicio` ascendente
+
+#### Scenario: Consulta por rango
+
+- **WHEN** se envía `GET /api/turnos?desde=...&hasta=...` con un rango válido
+- **THEN** se responde `200` con todos los turnos que intersectan el rango, de cualquier estado, ordenados por `inicio` ascendente
+
+#### Scenario: Filtro por profesional
+
+- **WHEN** se envía `GET /api/turnos` con `profesionalId`
+- **THEN** la respuesta incluye solo los turnos de ese profesional
+
+#### Scenario: Filtro por sillón
+
+- **WHEN** se envía `GET /api/turnos` con `sillonId`
+- **THEN** la respuesta incluye solo los turnos de ese sillón
+
+#### Scenario: Filtro por paciente
+
+- **WHEN** se envía `GET /api/turnos` con `pacienteId`
+- **THEN** la respuesta incluye solo los turnos de ese paciente
+
+#### Scenario: Filtros combinados
+
+- **WHEN** se envían `pacienteId`, `profesionalId` y/o `sillonId` juntos
+- **THEN** la respuesta incluye solo los turnos que cumplen todos los filtros
+
+#### Scenario: Inclusión de turnos no activos
+
+- **WHEN** existen turnos en estado `cancelado`, `atendido` o `ausente`
+- **THEN** aparecen en la respuesta cuando no se filtra por otro criterio que los excluya
+
+#### Scenario: Enriquecimiento de respuesta
+
+- **WHEN** se devuelve la lista de turnos
+- **THEN** cada item incluye un resumen del paciente (`id`, `nombre`, `apellido`) y de la prestación (`id`, `codigo`, `nombre`, `duracionMinutos`)

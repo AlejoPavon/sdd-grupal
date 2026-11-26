@@ -7,6 +7,7 @@ export interface FiltrosTurno {
   hasta?: Date;
   profesionalId?: string;
   sillonId?: string;
+  pacienteId?: string;
   estados?: EstadoTurno[];
 }
 

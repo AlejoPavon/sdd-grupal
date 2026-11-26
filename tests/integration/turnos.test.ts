@@ -43,7 +43,7 @@ describe("POST /api/turnos", () => {
     profesionalId: SEED_IDS.profesional1,
     sillonId: SEED_IDS.sillon1,
     prestacionId: SEED_IDS.consulta,
-    inicio: "2026-11-18T09:00:00.000Z",
+    inicio: "2027-01-15T09:00:00.000Z",
   });
 
   it("crea un turno válido y responde 201", async () => {
@@ -58,8 +58,8 @@ describe("POST /api/turnos", () => {
     const body = response.json();
     expect(body.estado).toBe("pendiente");
     expect(body.id).toBeTruthy();
-    expect(body.inicio).toBe("2026-11-18T09:00:00.000Z");
-    expect(body.fin).toBe("2026-11-18T09:30:00.000Z");
+    expect(body.inicio).toBe("2027-01-15T09:00:00.000Z");
+    expect(body.fin).toBe("2027-01-15T09:30:00.000Z");
   });
 
   it("un profesional distinto en un sillón libre crea el turno sin conflicto", async () => {
@@ -92,7 +92,7 @@ describe("POST /api/turnos", () => {
       ...baseBody(),
       pacienteId: SEED_IDS.paciente2,
       sillonId: SEED_IDS.sillon2,
-      inicio: "2026-11-18T09:15:00.000Z",
+      inicio: "2027-01-15T09:15:00.000Z",
     };
     const response = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/turnos", payload: segundo });
 
@@ -109,7 +109,7 @@ describe("POST /api/turnos", () => {
       ...baseBody(),
       pacienteId: SEED_IDS.paciente2,
       profesionalId: SEED_IDS.profesional2,
-      inicio: "2026-11-18T09:15:00.000Z",
+      inicio: "2027-01-15T09:15:00.000Z",
     };
     const response = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/turnos", payload: segundo });
 
@@ -122,7 +122,7 @@ describe("POST /api/turnos", () => {
     const r1 = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/turnos", payload: baseBody() });
     expect(r1.statusCode).toBe(201);
 
-    const segundo = { ...baseBody(), pacienteId: SEED_IDS.paciente2, inicio: "2026-11-18T09:30:00.000Z" };
+    const segundo = { ...baseBody(), pacienteId: SEED_IDS.paciente2, inicio: "2027-01-15T09:30:00.000Z" };
     const r2 = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/turnos", payload: segundo });
     expect(r2.statusCode).toBe(201);
   });
@@ -170,6 +170,14 @@ describe("POST /api/turnos", () => {
     expect(response.json().code).toBe("TURNO_INTERVALO_INVALIDO");
   });
 
+  it("rechaza un turno en el pasado con 400 TURNO_EN_EL_PASADO", async () => {
+    const body = { ...baseBody(), inicio: "2020-01-01T09:00:00.000Z" };
+    const response = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/turnos", payload: body });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json().code).toBe("TURNO_EN_EL_PASADO");
+  });
+
   it("validación: campo faltante responde 400", async () => {
     const { pacienteId: _, ...rest } = baseBody();
     void _;
@@ -196,7 +204,7 @@ describe("POST /api/turnos", () => {
       ...baseBody(),
       pacienteId: SEED_IDS.paciente2,
       sillonId: SEED_IDS.sillon2,
-      inicio: "2026-11-18T09:15:00.000Z",
+      inicio: "2027-01-15T09:15:00.000Z",
     };
     await app.inject({ headers: sesion.headers, method: "POST", url: "/api/turnos", payload: segundo });
     const turnos = await repos.turnos.listar();
@@ -234,17 +242,17 @@ describe("GET /api/turnos", () => {
     profesionalId: SEED_IDS.profesional1,
     sillonId: SEED_IDS.sillon1,
     prestacionId: SEED_IDS.consulta,
-    inicio: "2026-11-18T09:00:00.000Z",
+    inicio: "2027-01-15T09:00:00.000Z",
   });
 
   it("lista turnos por rango, ordenados por inicio", async () => {
     await crearTurno(baseBody());
-    await crearTurno({ ...baseBody(), pacienteId: SEED_IDS.paciente2, inicio: "2026-11-18T11:00:00.000Z" });
+    await crearTurno({ ...baseBody(), pacienteId: SEED_IDS.paciente2, inicio: "2027-01-15T11:00:00.000Z" });
 
     const res = await app.inject({
       headers: sesion.headers,
       method: "GET",
-      url: "/api/turnos?desde=2026-11-18T08:00:00.000Z&hasta=2026-11-18T12:00:00.000Z",
+      url: "/api/turnos?desde=2027-01-15T08:00:00.000Z&hasta=2027-01-15T12:00:00.000Z",
     });
     expect(res.statusCode).toBe(200);
     const body = res.json();
@@ -259,7 +267,7 @@ describe("GET /api/turnos", () => {
       profesionalId: SEED_IDS.profesional2,
       sillonId: SEED_IDS.sillon2,
       prestacionId: SEED_IDS.consulta,
-      inicio: "2026-11-18T09:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
     };
     await crearTurno(segundo);
 
@@ -279,13 +287,13 @@ describe("GET /api/turnos", () => {
     const res = await app.inject({
       headers: sesion.headers,
       method: "GET",
-      url: "/api/turnos?desde=2026-11-18T12:00:00.000Z&hasta=2026-11-18T08:00:00.000Z",
+      url: "/api/turnos?desde=2027-01-15T12:00:00.000Z&hasta=2027-01-15T08:00:00.000Z",
     });
     expect(res.statusCode).toBe(400);
     expect(res.json().code).toBe("RANGO_INVALIDO");
   });
 
-  it("excluye turnos cancelados", async () => {
+  it("incluye turnos cancelados", async () => {
     const r = await crearTurno(baseBody());
     const id = r.json().id;
     const turno = await repos.turnos.buscarPorId(id);
@@ -294,10 +302,41 @@ describe("GET /api/turnos", () => {
     const res = await app.inject({
       headers: sesion.headers,
       method: "GET",
-      url: "/api/turnos?desde=2026-11-18T08:00:00.000Z&hasta=2026-11-18T12:00:00.000Z",
+      url: "/api/turnos?desde=2027-01-15T08:00:00.000Z&hasta=2027-01-15T12:00:00.000Z",
     });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toHaveLength(0);
+    expect(res.json()).toHaveLength(1);
+    expect(res.json()[0].estado).toBe("cancelado");
+  });
+
+  it("lista general devuelve todos los estados", async () => {
+    const r = await crearTurno(baseBody());
+    const turno = await repos.turnos.buscarPorId(r.json().id);
+    await repos.turnos.actualizar({ ...turno!, estado: "atendido" });
+
+    const res = await app.inject({
+      headers: sesion.headers,
+      method: "GET",
+      url: "/api/turnos",
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toHaveLength(1);
+    expect(res.json()[0].estado).toBe("atendido");
+  });
+
+  it("filtra por paciente", async () => {
+    await crearTurno(baseBody());
+    await crearTurno({ ...baseBody(), pacienteId: SEED_IDS.paciente2, inicio: "2027-01-15T10:00:00.000Z" });
+
+    const res = await app.inject({
+      headers: sesion.headers,
+      method: "GET",
+      url: `/api/turnos?pacienteId=${SEED_IDS.paciente1}`,
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body).toHaveLength(1);
+    expect(body[0].pacienteId).toBe(SEED_IDS.paciente1);
   });
 
   it("enriquece respuesta con paciente y prestacion", async () => {
@@ -305,7 +344,7 @@ describe("GET /api/turnos", () => {
     const res = await app.inject({
       headers: sesion.headers,
       method: "GET",
-      url: "/api/turnos?desde=2026-11-18T08:00:00.000Z&hasta=2026-11-18T12:00:00.000Z",
+      url: "/api/turnos?desde=2027-01-15T08:00:00.000Z&hasta=2027-01-15T12:00:00.000Z",
     });
     expect(res.statusCode).toBe(200);
     const body = res.json();
@@ -354,7 +393,7 @@ describe("PATCH /api/turnos/:id/cancelar", () => {
     profesionalId: SEED_IDS.profesional1,
     sillonId: SEED_IDS.sillon1,
     prestacionId: SEED_IDS.consulta,
-    inicio: "2026-11-18T09:00:00.000Z",
+    inicio: "2027-01-15T09:00:00.000Z",
   });
 
   async function crearTurno() {
@@ -431,7 +470,7 @@ describe("RBAC y scoping en turnos", () => {
     profesionalId: SEED_IDS.profesional1,
     sillonId: SEED_IDS.sillon1,
     prestacionId: SEED_IDS.consulta,
-    inicio: "2026-11-18T09:00:00.000Z",
+    inicio: "2027-01-15T09:00:00.000Z",
   });
 
   beforeEach(async () => {
@@ -625,7 +664,7 @@ describe("Bloqueos en POST /api/turnos", () => {
     profesionalId: SEED_IDS.profesional1,
     sillonId: SEED_IDS.sillon1,
     prestacionId: SEED_IDS.consulta,
-    inicio: "2026-11-18T09:00:00.000Z",
+    inicio: "2027-01-15T09:00:00.000Z",
   });
 
   beforeEach(async () => {
@@ -671,17 +710,17 @@ describe("Bloqueos en POST /api/turnos", () => {
   it("bloqueo del profesional rechaza con 409 TURNO_BLOQUEADO y details.bloqueo", async () => {
     const bloqueo = await bloquear({
       profesionalId: SEED_IDS.profesional1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
-    const response = await crearTurno(recepcion, { inicio: "2026-11-18T09:30:00.000Z" });
+    const response = await crearTurno(recepcion, { inicio: "2027-01-15T09:30:00.000Z" });
 
     expect(response.statusCode).toBe(409);
     expect(response.json()).toMatchObject({
       code: "TURNO_BLOQUEADO",
       details: {
-        bloqueo: { id: bloqueo.id, inicio: "2026-11-18T09:00:00.000Z", fin: "2026-11-18T10:00:00.000Z" },
+        bloqueo: { id: bloqueo.id, inicio: "2027-01-15T09:00:00.000Z", fin: "2027-01-15T10:00:00.000Z" },
       },
     });
     expect(await repos.turnos.listar()).toEqual([]);
@@ -690,11 +729,11 @@ describe("Bloqueos en POST /api/turnos", () => {
   it("bloqueo del sillón rechaza con 409 TURNO_BLOQUEADO", async () => {
     await bloquear({
       sillonId: SEED_IDS.sillon1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
-    const response = await crearTurno(recepcion, { inicio: "2026-11-18T09:30:00.000Z" });
+    const response = await crearTurno(recepcion, { inicio: "2027-01-15T09:30:00.000Z" });
 
     expect(response.statusCode).toBe(409);
     expect(response.json().code).toBe("TURNO_BLOQUEADO");
@@ -705,11 +744,11 @@ describe("Bloqueos en POST /api/turnos", () => {
     await bloquear({
       profesionalId: SEED_IDS.profesional1,
       sillonId: SEED_IDS.sillon1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
-    const response = await crearTurno(admin, { inicio: "2026-11-18T09:30:00.000Z", forzar: true });
+    const response = await crearTurno(admin, { inicio: "2027-01-15T09:30:00.000Z", forzar: true });
 
     expect(response.statusCode).toBe(201);
     expect(response.json().autorizadoPor).toBe(SEED_IDS.admin);
@@ -739,14 +778,14 @@ describe("Bloqueos en POST /api/turnos", () => {
   it("forzar no omite solapamientos con turnos ya existentes", async () => {
     await bloquear({
       profesionalId: SEED_IDS.profesional1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
     expect((await crearTurno(admin, { forzar: true })).statusCode).toBe(201);
 
     const response = await crearTurno(admin, {
       pacienteId: SEED_IDS.paciente2,
-      inicio: "2026-11-18T09:15:00.000Z",
+      inicio: "2027-01-15T09:15:00.000Z",
       forzar: true,
     });
 
@@ -758,11 +797,11 @@ describe("Bloqueos en POST /api/turnos", () => {
     await bloquear({
       profesionalId: SEED_IDS.profesional1,
       sillonId: SEED_IDS.sillon1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T09:30:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T09:30:00.000Z",
     });
 
-    const response = await crearTurno(recepcion, { inicio: "2026-11-18T09:30:00.000Z" });
+    const response = await crearTurno(recepcion, { inicio: "2027-01-15T09:30:00.000Z" });
 
     expect(response.statusCode).toBe(201);
   });
@@ -771,8 +810,8 @@ describe("Bloqueos en POST /api/turnos", () => {
     const bloqueo = await bloquear({
       profesionalId: SEED_IDS.profesional1,
       sillonId: SEED_IDS.sillon1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T09:30:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T09:30:00.000Z",
     });
 
     expect((await crearTurno(recepcion)).statusCode).toBe(409);
@@ -807,7 +846,7 @@ describe("Sobreturnos en POST /api/turnos", () => {
     profesionalId: SEED_IDS.profesional1,
     sillonId: SEED_IDS.sillon1,
     prestacionId: SEED_IDS.consulta,
-    inicio: "2026-11-18T09:00:00.000Z",
+    inicio: "2027-01-15T09:00:00.000Z",
   });
 
   beforeEach(async () => {
@@ -902,7 +941,7 @@ describe("Sobreturnos en POST /api/turnos", () => {
     const response = await crear(admin, {
       esSobreturno: true,
       pacienteId: SEED_IDS.paciente2,
-      inicio: "2026-11-18T09:15:00.000Z",
+      inicio: "2027-01-15T09:15:00.000Z",
     });
 
     expect(response.statusCode).toBe(409);
@@ -913,11 +952,11 @@ describe("Sobreturnos en POST /api/turnos", () => {
   it("un bloqueo de sillón rechaza el sobreturno con 409 TURNO_BLOQUEADO", async () => {
     const bloqueo = await bloquear({
       sillonId: SEED_IDS.sillon1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
-    const response = await crear(recepcion, { esSobreturno: true, inicio: "2026-11-18T09:30:00.000Z" });
+    const response = await crear(recepcion, { esSobreturno: true, inicio: "2027-01-15T09:30:00.000Z" });
 
     expect(response.statusCode).toBe(409);
     expect(response.json()).toMatchObject({
@@ -930,14 +969,14 @@ describe("Sobreturnos en POST /api/turnos", () => {
   it("un administrador combina sobreturno y forzar sobre un bloqueo de sillón", async () => {
     await bloquear({
       sillonId: SEED_IDS.sillon1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
     const response = await crear(admin, {
       esSobreturno: true,
       forzar: true,
-      inicio: "2026-11-18T09:30:00.000Z",
+      inicio: "2027-01-15T09:30:00.000Z",
     });
 
     expect(response.statusCode).toBe(201);
@@ -973,7 +1012,7 @@ describe("Sobreturnos en POST /api/turnos", () => {
 
     const res = await app.inject({
       method: "GET",
-      url: "/api/turnos?desde=2026-11-18T08:00:00.000Z&hasta=2026-11-18T12:00:00.000Z",
+      url: "/api/turnos?desde=2027-01-15T08:00:00.000Z&hasta=2027-01-15T12:00:00.000Z",
       headers: admin.headers,
     });
 
@@ -993,15 +1032,15 @@ describe("Sobreturnos en POST /api/turnos", () => {
     const solapado = await crear(recepcion, {
       pacienteId: SEED_IDS.paciente2,
       sillonId: SEED_IDS.sillon2,
-      inicio: "2026-11-18T09:15:00.000Z",
+      inicio: "2027-01-15T09:15:00.000Z",
     });
     expect(solapado.statusCode).toBe(409);
     expect(solapado.json().code).toBe("TURNO_SOLAPADO_PROFESIONAL");
 
     await bloquear({
       profesionalId: SEED_IDS.profesional2,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
     const bloqueado = await crear(recepcion, {
       profesionalId: SEED_IDS.profesional2,

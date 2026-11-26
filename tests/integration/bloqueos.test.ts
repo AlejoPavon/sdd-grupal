@@ -18,8 +18,8 @@ const UUID_INEXISTENTE = "00000000-0000-4000-8000-000000000099";
 
 const bodyBase = () => ({
   profesionalId: SEED_IDS.profesional1,
-  inicio: "2026-11-18T09:00:00.000Z",
-  fin: "2026-11-18T09:30:00.000Z",
+  inicio: "2027-01-15T09:00:00.000Z",
+  fin: "2027-01-15T09:30:00.000Z",
   motivo: "Cirugía",
 });
 
@@ -59,8 +59,8 @@ describe("/api/bloqueos", () => {
     const body = response.json();
     expect(body.id).toMatch(/^[0-9a-f-]{36}$/);
     expect(body.profesionalId).toBe(SEED_IDS.profesional1);
-    expect(body.inicio).toBe("2026-11-18T09:00:00.000Z");
-    expect(body.fin).toBe("2026-11-18T09:30:00.000Z");
+    expect(body.inicio).toBe("2027-01-15T09:00:00.000Z");
+    expect(body.fin).toBe("2027-01-15T09:30:00.000Z");
     expect(body.motivo).toBe("Cirugía");
     expect(body.creadoPor).toBe(admin.usuario.id);
     expect(body.createdAt).toBeTruthy();
@@ -90,7 +90,7 @@ describe("/api/bloqueos", () => {
   });
 
   it("POST con fin anterior o igual al inicio responde 400 BLOQUEO_INTERVALO_INVALIDO", async () => {
-    for (const fin of ["2026-11-18T08:59:00.000Z", "2026-11-18T09:00:00.000Z"]) {
+    for (const fin of ["2027-01-15T08:59:00.000Z", "2027-01-15T09:00:00.000Z"]) {
       const response = await crear(admin, { ...bodyBase(), fin });
       expect(response.statusCode).toBe(400);
       expect(response.json().code).toBe("BLOQUEO_INTERVALO_INVALIDO");
@@ -123,7 +123,7 @@ describe("/api/bloqueos", () => {
 
   it("GET con Administrador y Recepcionista responde 200; profesional 403; sin sesión 401", async () => {
     await crear(admin);
-    await crear(recepcion, { ...bodyBase(), inicio: "2026-11-18T10:00:00.000Z", fin: "2026-11-18T10:30:00.000Z" });
+    await crear(recepcion, { ...bodyBase(), inicio: "2027-01-15T10:00:00.000Z", fin: "2027-01-15T10:30:00.000Z" });
 
     const respuestaAdmin = await app.inject({ method: "GET", url: "/api/bloqueos", headers: admin.headers });
     expect(respuestaAdmin.statusCode).toBe(200);
@@ -142,26 +142,26 @@ describe("/api/bloqueos", () => {
   });
 
   it("GET filtra por rango semiabierto y ordena por inicio", async () => {
-    await crear(admin, { ...bodyBase(), inicio: "2026-11-18T11:00:00.000Z", fin: "2026-11-18T11:30:00.000Z" });
-    await crear(admin, { ...bodyBase(), inicio: "2026-11-18T09:00:00.000Z", fin: "2026-11-18T09:30:00.000Z" });
-    await crear(admin, { ...bodyBase(), inicio: "2026-11-18T10:00:00.000Z", fin: "2026-11-18T10:30:00.000Z" });
+    await crear(admin, { ...bodyBase(), inicio: "2027-01-15T11:00:00.000Z", fin: "2027-01-15T11:30:00.000Z" });
+    await crear(admin, { ...bodyBase(), inicio: "2027-01-15T09:00:00.000Z", fin: "2027-01-15T09:30:00.000Z" });
+    await crear(admin, { ...bodyBase(), inicio: "2027-01-15T10:00:00.000Z", fin: "2027-01-15T10:30:00.000Z" });
 
     const response = await app.inject({
       method: "GET",
-      url: "/api/bloqueos?desde=2026-11-18T09:30:00.000Z&hasta=2026-11-18T11:00:00.000Z",
+      url: "/api/bloqueos?desde=2027-01-15T09:30:00.000Z&hasta=2027-01-15T11:00:00.000Z",
       headers: admin.headers,
     });
 
     expect(response.statusCode).toBe(200);
     expect(response.json().map((b: { inicio: string }) => b.inicio)).toEqual([
-      "2026-11-18T10:00:00.000Z",
+      "2027-01-15T10:00:00.000Z",
     ]);
   });
 
   it("GET con desde >= hasta responde 400 RANGO_INVALIDO", async () => {
     const response = await app.inject({
       method: "GET",
-      url: "/api/bloqueos?desde=2026-11-18T10:00:00.000Z&hasta=2026-11-18T10:00:00.000Z",
+      url: "/api/bloqueos?desde=2027-01-15T10:00:00.000Z&hasta=2027-01-15T10:00:00.000Z",
       headers: admin.headers,
     });
 
@@ -225,19 +225,19 @@ describe("/api/bloqueos", () => {
 
   it("GET sin filtros y con un solo límite devuelve los bloqueos correctos", async () => {
     await crear(admin);
-    await crear(admin, { ...bodyBase(), inicio: "2026-11-18T11:00:00.000Z", fin: "2026-11-18T11:30:00.000Z" });
+    await crear(admin, { ...bodyBase(), inicio: "2027-01-15T11:00:00.000Z", fin: "2027-01-15T11:30:00.000Z" });
 
     const todos = await app.inject({ method: "GET", url: "/api/bloqueos", headers: admin.headers });
     expect(todos.json()).toHaveLength(2);
 
     const desdeSolo = await app.inject({
       method: "GET",
-      url: "/api/bloqueos?desde=2026-11-18T10:00:00.000Z",
+      url: "/api/bloqueos?desde=2027-01-15T10:00:00.000Z",
       headers: admin.headers,
     });
     expect(desdeSolo.statusCode).toBe(200);
     expect(desdeSolo.json().map((b: { inicio: string }) => b.inicio)).toEqual([
-      "2026-11-18T11:00:00.000Z",
+      "2027-01-15T11:00:00.000Z",
     ]);
   });
 

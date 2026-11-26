@@ -14,8 +14,8 @@ import {
 
 const DATOS_BASE = {
   id: "00000000-0000-4000-8000-000000000071",
-  inicio: new Date("2026-11-18T09:00:00.000Z"),
-  fin: new Date("2026-11-18T09:30:00.000Z"),
+  inicio: new Date("2027-01-15T09:00:00.000Z"),
+  fin: new Date("2027-01-15T09:30:00.000Z"),
   motivo: "Cirugía programada",
   creadoPor: "00000000-0000-4000-8000-000000000051",
   createdAt: new Date("2026-11-17T12:00:00.000Z"),
@@ -32,8 +32,8 @@ describe("Bloqueo (dominio)", () => {
       ...DATOS_BASE,
       profesionalId: PROFESIONAL,
     });
-    expect(bloqueo.inicio.toISOString()).toBe("2026-11-18T09:00:00.000Z");
-    expect(bloqueo.fin.toISOString()).toBe("2026-11-18T09:30:00.000Z");
+    expect(bloqueo.inicio.toISOString()).toBe("2027-01-15T09:00:00.000Z");
+    expect(bloqueo.fin.toISOString()).toBe("2027-01-15T09:30:00.000Z");
   });
 
   it("crea un bloqueo de sillón sin profesional", () => {
@@ -63,8 +63,8 @@ describe("Bloqueo (dominio)", () => {
   });
 
   it.each([
-    ["fin anterior", new Date("2026-11-18T08:59:00.000Z")],
-    ["fin igual", new Date("2026-11-18T09:00:00.000Z")],
+    ["fin anterior", new Date("2027-01-15T08:59:00.000Z")],
+    ["fin igual", new Date("2027-01-15T09:00:00.000Z")],
   ])("rechaza %s al inicio", (_titulo, fin) => {
     expect(() => crearBloqueo({ ...DATOS_BASE, profesionalId: PROFESIONAL, fin })).toThrow(
       BloqueoIntervaloInvalidoError,
@@ -98,12 +98,12 @@ describe("Bloqueo (dominio)", () => {
     const bloqueo = crearBloqueo({
       ...DATOS_BASE,
       profesionalId: PROFESIONAL,
-      inicio: new Date("2026-11-18T06:00:00-03:00"),
-      fin: new Date("2026-11-18T06:30:00-03:00"),
+      inicio: new Date("2027-01-15T06:00:00-03:00"),
+      fin: new Date("2027-01-15T06:30:00-03:00"),
     });
 
-    expect(bloqueo.inicio.toISOString()).toBe("2026-11-18T09:00:00.000Z");
-    expect(bloqueo.fin.toISOString()).toBe("2026-11-18T09:30:00.000Z");
+    expect(bloqueo.inicio.toISOString()).toBe("2027-01-15T09:00:00.000Z");
+    expect(bloqueo.fin.toISOString()).toBe("2027-01-15T09:30:00.000Z");
     expect(intervaloDelBloqueo(bloqueo).duracionMinutos()).toBe(30);
   });
 
@@ -113,8 +113,8 @@ describe("Bloqueo (dominio)", () => {
       ...DATOS_BASE,
       id: "00000000-0000-4000-8000-000000000072",
       profesionalId: PROFESIONAL,
-      inicio: new Date("2026-11-18T09:15:00.000Z"),
-      fin: new Date("2026-11-18T09:45:00.000Z"),
+      inicio: new Date("2027-01-15T09:15:00.000Z"),
+      fin: new Date("2027-01-15T09:45:00.000Z"),
     });
 
     expect(segundo.id).not.toBe(primero.id);
@@ -124,8 +124,8 @@ describe("Bloqueo (dominio)", () => {
   it("considera contiguos dos bloqueos que se tocan en un extremo", () => {
     const primero = crearBloqueo({ ...DATOS_BASE, profesionalId: PROFESIONAL });
     const contiguo = new Intervalo(
-      new Date("2026-11-18T09:30:00.000Z"),
-      new Date("2026-11-18T10:00:00.000Z"),
+      new Date("2027-01-15T09:30:00.000Z"),
+      new Date("2027-01-15T10:00:00.000Z"),
     );
 
     expect(bloqueoSeSuperponeConIntervalo(primero, contiguo)).toBe(false);

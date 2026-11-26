@@ -33,8 +33,8 @@ describe("EliminarBloqueo", () => {
     await repos.bloqueos.crear({
       id: ID_BLOQUEO,
       profesionalId: SEED_IDS.profesional1,
-      inicio: new Date("2026-11-18T09:00:00.000Z"),
-      fin: new Date("2026-11-18T09:30:00.000Z"),
+      inicio: new Date("2027-01-15T09:00:00.000Z"),
+      fin: new Date("2027-01-15T09:30:00.000Z"),
       motivo: "Prueba",
       creadoPor: SEED_IDS.admin,
       createdAt: new Date("2026-11-17T12:00:00.000Z"),

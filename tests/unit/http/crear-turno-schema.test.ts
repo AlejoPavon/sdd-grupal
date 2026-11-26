@@ -10,7 +10,7 @@ const IDS = {
 };
 
 function bodyBase() {
-  return { ...IDS, inicio: "2026-11-18T09:00:00.000Z" };
+  return { ...IDS, inicio: "2027-01-15T09:00:00.000Z" };
 }
 
 describe("crearTurnoSchema — flag esSobreturno", () => {

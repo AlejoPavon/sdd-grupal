@@ -36,22 +36,22 @@ const TARDE = bloqueo(
   "00000000-0000-4000-8000-000000000083",
   PROFESIONAL_B,
   SILLON_B,
-  "2026-11-18T11:00:00.000Z",
-  "2026-11-18T11:30:00.000Z",
+  "2027-01-15T11:00:00.000Z",
+  "2027-01-15T11:30:00.000Z",
 );
 const TEMPRANO = bloqueo(
   "00000000-0000-4000-8000-000000000084",
   PROFESIONAL_A,
   SILLON_A,
-  "2026-11-18T09:00:00.000Z",
-  "2026-11-18T09:30:00.000Z",
+  "2027-01-15T09:00:00.000Z",
+  "2027-01-15T09:30:00.000Z",
 );
 const MEDIO = bloqueo(
   "00000000-0000-4000-8000-000000000085",
   PROFESIONAL_B,
   SILLON_A,
-  "2026-11-18T10:00:00.000Z",
-  "2026-11-18T10:30:00.000Z",
+  "2027-01-15T10:00:00.000Z",
+  "2027-01-15T10:30:00.000Z",
 );
 
 describe("ListarBloqueos", () => {
@@ -79,8 +79,8 @@ describe("ListarBloqueos", () => {
 
   it("filtra por intersección semiabierta con el rango", async () => {
     const bloqueos = await new ListarBloqueos(repos).execute({
-      desde: new Date("2026-11-18T09:30:00.000Z"),
-      hasta: new Date("2026-11-18T11:00:00.000Z"),
+      desde: new Date("2027-01-15T09:30:00.000Z"),
+      hasta: new Date("2027-01-15T11:00:00.000Z"),
     });
 
     expect(bloqueos.map((b) => b.id)).toEqual([MEDIO.id]);
@@ -90,8 +90,8 @@ describe("ListarBloqueos", () => {
     let error: unknown;
     try {
       await new ListarBloqueos(repos).execute({
-        desde: new Date("2026-11-18T10:00:00.000Z"),
-        hasta: new Date("2026-11-18T10:00:00.000Z"),
+        desde: new Date("2027-01-15T10:00:00.000Z"),
+        hasta: new Date("2027-01-15T10:00:00.000Z"),
       });
     } catch (e) {
       error = e;
@@ -104,11 +104,11 @@ describe("ListarBloqueos", () => {
   it("admite rangos con un solo límite y filtros por recurso (triangulación)", async () => {
     const listar = new ListarBloqueos(repos);
 
-    expect((await listar.execute({ desde: new Date("2026-11-18T10:15:00.000Z") })).map((b) => b.id)).toEqual([
+    expect((await listar.execute({ desde: new Date("2027-01-15T10:15:00.000Z") })).map((b) => b.id)).toEqual([
       MEDIO.id,
       TARDE.id,
     ]);
-    expect((await listar.execute({ hasta: new Date("2026-11-18T10:15:00.000Z") })).map((b) => b.id)).toEqual([
+    expect((await listar.execute({ hasta: new Date("2027-01-15T10:15:00.000Z") })).map((b) => b.id)).toEqual([
       TEMPRANO.id,
       MEDIO.id,
     ]);
@@ -124,12 +124,12 @@ describe("ListarBloqueos", () => {
 
     await expect(
       listar.execute({
-        desde: new Date("2026-11-18T11:00:00.000Z"),
-        hasta: new Date("2026-11-18T10:00:00.000Z"),
+        desde: new Date("2027-01-15T11:00:00.000Z"),
+        hasta: new Date("2027-01-15T10:00:00.000Z"),
       }),
     ).rejects.toBeInstanceOf(RangoInvalidoError);
     await expect(
-      listar.execute({ desde: new Date("fecha-invalida"), hasta: new Date("2026-11-18T10:00:00.000Z") }),
+      listar.execute({ desde: new Date("fecha-invalida"), hasta: new Date("2027-01-15T10:00:00.000Z") }),
     ).rejects.toBeInstanceOf(RangoInvalidoError);
   });
 });

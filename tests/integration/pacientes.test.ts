@@ -229,7 +229,7 @@ describe("Pacientes CRUD", () => {
       profesionalId: SEED_IDS.profesional1,
       sillonId: SEED_IDS.sillon1,
       prestacionId: SEED_IDS.consulta,
-      inicio: "2026-11-18T09:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
     };
     const res = await app.inject({ headers: sesion.headers, method: "POST", url: "/api/turnos", payload: body });
     expect(res.statusCode).toBe(409);
@@ -267,7 +267,7 @@ describe("RBAC y scoping en pacientes", () => {
   }
 
   async function vincular(pacienteId: string, profesionalId: string, estado: "pendiente" | "cancelado" | "atendido" = "pendiente") {
-    const inicio = new Date("2026-11-18T09:00:00.000Z");
+    const inicio = new Date("2027-01-15T09:00:00.000Z");
     await repos.turnos.crear({
       id: randomUUID(),
       pacienteId,

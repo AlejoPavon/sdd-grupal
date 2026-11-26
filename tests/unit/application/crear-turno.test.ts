@@ -17,6 +17,7 @@ import { cargarSeed, SEED_IDS } from "../../../src/infrastructure/seed.js";
 import {
   RecursoInactivoError,
   RecursoNoEncontradoError,
+  TurnoEnElPasadoError,
   TurnoSolapadoError,
 } from "../../../src/domain/turno/turno.errors.js";
 
@@ -39,7 +40,7 @@ describe("CrearTurno", () => {
 
   it("crea un turno válido en estado pendiente con fin calculado y trazabilidad", async () => {
     const crearTurno = new CrearTurno(repos);
-    const inicio = new Date("2026-11-18T09:00:00.000Z");
+    const inicio = new Date("2027-01-15T09:00:00.000Z");
 
     const turno = await crearTurno.execute({
       pacienteId: SEED_IDS.paciente1,
@@ -52,7 +53,7 @@ describe("CrearTurno", () => {
 
     expect(turno.estado).toBe("pendiente");
     expect(turno.inicio).toEqual(inicio);
-    expect(turno.fin).toEqual(new Date("2026-11-18T09:30:00.000Z"));
+    expect(turno.fin).toEqual(new Date("2027-01-15T09:30:00.000Z"));
     expect(turno.createdBy).toBe(SEED_IDS.recepcion);
     expect(turno.createdAt).toBeInstanceOf(Date);
     expect(turno.updatedAt).toBeInstanceOf(Date);
@@ -64,7 +65,7 @@ describe("CrearTurno", () => {
 
   it("rechaza solapamiento por profesional y no persiste el nuevo turno", async () => {
     const crearTurno = new CrearTurno(repos);
-    const inicio1 = new Date("2026-11-18T09:00:00.000Z");
+    const inicio1 = new Date("2027-01-15T09:00:00.000Z");
     await crearTurno.execute({
       pacienteId: SEED_IDS.paciente1,
       profesionalId: SEED_IDS.profesional1,
@@ -74,7 +75,7 @@ describe("CrearTurno", () => {
       creadoPor: SEED_IDS.recepcion,
     });
 
-    const inicio2 = new Date("2026-11-18T09:15:00.000Z");
+    const inicio2 = new Date("2027-01-15T09:15:00.000Z");
     await expect(
       crearTurno.execute({
         pacienteId: SEED_IDS.paciente2,
@@ -107,7 +108,7 @@ describe("CrearTurno", () => {
 
   it("rechaza solapamiento por sillón", async () => {
     const crearTurno = new CrearTurno(repos);
-    const inicio1 = new Date("2026-11-18T09:00:00.000Z");
+    const inicio1 = new Date("2027-01-15T09:00:00.000Z");
     await crearTurno.execute({
       pacienteId: SEED_IDS.paciente1,
       profesionalId: SEED_IDS.profesional1,
@@ -117,7 +118,7 @@ describe("CrearTurno", () => {
       creadoPor: SEED_IDS.recepcion,
     });
 
-    const inicio2 = new Date("2026-11-18T09:15:00.000Z");
+    const inicio2 = new Date("2027-01-15T09:15:00.000Z");
     try {
       await crearTurno.execute({
         pacienteId: SEED_IDS.paciente2,
@@ -140,7 +141,7 @@ describe("CrearTurno", () => {
       profesionalId: SEED_IDS.profesional1,
       sillonId: SEED_IDS.sillon1,
       prestacionId: SEED_IDS.consulta,
-      inicio: new Date("2026-11-18T09:00:00.000Z"),
+      inicio: new Date("2027-01-15T09:00:00.000Z"),
       creadoPor: SEED_IDS.recepcion,
     });
 
@@ -149,7 +150,7 @@ describe("CrearTurno", () => {
       profesionalId: SEED_IDS.profesional1,
       sillonId: SEED_IDS.sillon1,
       prestacionId: SEED_IDS.consulta,
-      inicio: new Date("2026-11-18T09:30:00.000Z"),
+      inicio: new Date("2027-01-15T09:30:00.000Z"),
       creadoPor: SEED_IDS.recepcion,
     });
 
@@ -175,7 +176,7 @@ describe("CrearTurno", () => {
         profesionalId: "prof-inactivo",
         sillonId: SEED_IDS.sillon1,
         prestacionId: SEED_IDS.consulta,
-        inicio: new Date("2026-11-18T09:00:00.000Z"),
+        inicio: new Date("2027-01-15T09:00:00.000Z"),
         creadoPor: SEED_IDS.recepcion,
       }),
     ).rejects.toBeInstanceOf(RecursoInactivoError);
@@ -189,7 +190,7 @@ describe("CrearTurno", () => {
         profesionalId: SEED_IDS.profesional1,
         sillonId: SEED_IDS.sillon1,
         prestacionId: SEED_IDS.consulta,
-        inicio: new Date("2026-11-18T09:00:00.000Z"),
+        inicio: new Date("2027-01-15T09:00:00.000Z"),
         creadoPor: SEED_IDS.recepcion,
       }),
     ).rejects.toBeInstanceOf(RecursoNoEncontradoError);
@@ -225,15 +226,15 @@ describe("CrearTurno", () => {
   it("rechaza un turno por bloqueo del profesional con details.bloqueo", async () => {
     const bloqueo = await bloquear({
       profesionalId: SEED_IDS.profesional1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
     let error: unknown;
     try {
       await new CrearTurno(repos).execute({
         ...turnoBase,
-        inicio: new Date("2026-11-18T09:30:00.000Z"),
+        inicio: new Date("2027-01-15T09:30:00.000Z"),
       });
     } catch (e) {
       error = e;
@@ -253,31 +254,31 @@ describe("CrearTurno", () => {
   it("rechaza un turno por bloqueo del sillón", async () => {
     await bloquear({
       sillonId: SEED_IDS.sillon1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
     await expect(
-      new CrearTurno(repos).execute({ ...turnoBase, inicio: new Date("2026-11-18T09:30:00.000Z") }),
+      new CrearTurno(repos).execute({ ...turnoBase, inicio: new Date("2027-01-15T09:30:00.000Z") }),
     ).rejects.toBeInstanceOf(TurnoBloqueadoError);
   });
 
   it("da prioridad al bloqueo del profesional cuando ambos están bloqueados", async () => {
     const bloqueoProfesional = await bloquear({
       profesionalId: SEED_IDS.profesional1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
     const bloqueoSillon = await bloquear({
       sillonId: SEED_IDS.sillon1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
     try {
       await new CrearTurno(repos).execute({
         ...turnoBase,
-        inicio: new Date("2026-11-18T09:30:00.000Z"),
+        inicio: new Date("2027-01-15T09:30:00.000Z"),
       });
       throw new Error("debió rechazarse");
     } catch (e) {
@@ -291,21 +292,21 @@ describe("CrearTurno", () => {
     await bloquear({
       profesionalId: SEED_IDS.profesional1,
       sillonId: SEED_IDS.sillon1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T09:30:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T09:30:00.000Z",
     });
     await bloquear({
       profesionalId: SEED_IDS.profesional1,
       sillonId: SEED_IDS.sillon1,
-      inicio: "2026-11-18T10:00:00.000Z",
-      fin: "2026-11-18T11:00:00.000Z",
+      inicio: "2027-01-15T10:00:00.000Z",
+      fin: "2027-01-15T11:00:00.000Z",
     });
 
     const crear = new CrearTurno(repos);
-    const contiguo = await crear.execute({ ...turnoBase, inicio: new Date("2026-11-18T09:30:00.000Z") });
+    const contiguo = await crear.execute({ ...turnoBase, inicio: new Date("2027-01-15T09:30:00.000Z") });
 
-    expect(contiguo.inicio.toISOString()).toBe("2026-11-18T09:30:00.000Z");
-    expect(contiguo.fin.toISOString()).toBe("2026-11-18T10:00:00.000Z");
+    expect(contiguo.inicio.toISOString()).toBe("2027-01-15T09:30:00.000Z");
+    expect(contiguo.fin.toISOString()).toBe("2027-01-15T10:00:00.000Z");
     expect(await repos.turnos.listar()).toHaveLength(1);
   });
 
@@ -313,13 +314,13 @@ describe("CrearTurno", () => {
     await bloquear({
       profesionalId: SEED_IDS.profesional1,
       sillonId: SEED_IDS.sillon1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
     const crear = new CrearTurno(repos);
     await crear.execute({
       ...turnoBase,
-      inicio: new Date("2026-11-18T09:00:00.000Z"),
+      inicio: new Date("2027-01-15T09:00:00.000Z"),
       forzar: true,
       autorizadoPor: SEED_IDS.admin,
     });
@@ -328,7 +329,7 @@ describe("CrearTurno", () => {
       await crear.execute({
         ...turnoBase,
         pacienteId: SEED_IDS.paciente2,
-        inicio: new Date("2026-11-18T09:00:00.000Z"),
+        inicio: new Date("2027-01-15T09:00:00.000Z"),
       });
       throw new Error("debió rechazarse");
     } catch (e) {
@@ -341,7 +342,7 @@ describe("CrearTurno", () => {
         ...turnoBase,
         pacienteId: SEED_IDS.paciente2,
         profesionalId: SEED_IDS.profesional2,
-        inicio: new Date("2026-11-18T09:00:00.000Z"),
+        inicio: new Date("2027-01-15T09:00:00.000Z"),
       });
       throw new Error("debió rechazarse");
     } catch (e) {
@@ -354,25 +355,25 @@ describe("CrearTurno", () => {
     await bloquear({
       profesionalId: SEED_IDS.profesional2,
       sillonId: SEED_IDS.sillon2,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
     const crear = new CrearTurno(repos);
-    const turno = await crear.execute({ ...turnoBase, inicio: new Date("2026-11-18T09:00:00.000Z") });
+    const turno = await crear.execute({ ...turnoBase, inicio: new Date("2027-01-15T09:00:00.000Z") });
     expect(turno.estado).toBe("pendiente");
 
     await bloquear({
       profesionalId: SEED_IDS.profesional1,
-      inicio: "2026-11-18T09:29:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:29:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
     await expect(
       crear.execute({
         ...turnoBase,
         pacienteId: SEED_IDS.paciente2,
         sillonId: SEED_IDS.sillon2,
-        inicio: new Date("2026-11-18T09:30:00.000Z"),
+        inicio: new Date("2027-01-15T09:30:00.000Z"),
       }),
     ).rejects.toBeInstanceOf(TurnoBloqueadoError);
   });
@@ -380,14 +381,14 @@ describe("CrearTurno", () => {
   it("forzar con bloqueo registra autorizadoPor y sin bloqueo no lo registra", async () => {
     await bloquear({
       profesionalId: SEED_IDS.profesional1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
     const crear = new CrearTurno(repos);
     const forzado = await crear.execute({
       ...turnoBase,
-      inicio: new Date("2026-11-18T09:30:00.000Z"),
+      inicio: new Date("2027-01-15T09:30:00.000Z"),
       forzar: true,
       autorizadoPor: SEED_IDS.admin,
     });
@@ -398,7 +399,7 @@ describe("CrearTurno", () => {
     const sinConflicto = await crear.execute({
       ...turnoBase,
       pacienteId: SEED_IDS.paciente2,
-      inicio: new Date("2026-11-18T10:00:00.000Z"),
+      inicio: new Date("2027-01-15T10:00:00.000Z"),
       forzar: true,
       autorizadoPor: SEED_IDS.admin,
     });
@@ -407,13 +408,13 @@ describe("CrearTurno", () => {
 
   it("forzar no omit solapamientos con turnos existentes", async () => {
     const crear = new CrearTurno(repos);
-    await crear.execute({ ...turnoBase, inicio: new Date("2026-11-18T09:00:00.000Z") });
+    await crear.execute({ ...turnoBase, inicio: new Date("2027-01-15T09:00:00.000Z") });
 
     await expect(
       crear.execute({
         ...turnoBase,
         pacienteId: SEED_IDS.paciente2,
-        inicio: new Date("2026-11-18T09:15:00.000Z"),
+        inicio: new Date("2027-01-15T09:15:00.000Z"),
         forzar: true,
         autorizadoPor: SEED_IDS.admin,
       }),
@@ -422,14 +423,14 @@ describe("CrearTurno", () => {
 
   it("un turno cancelado del profesional no bloquea la creación", async () => {
     const crear = new CrearTurno(repos);
-    const cancelado = await crear.execute({ ...turnoBase, inicio: new Date("2026-11-18T09:00:00.000Z") });
+    const cancelado = await crear.execute({ ...turnoBase, inicio: new Date("2027-01-15T09:00:00.000Z") });
     await repos.turnos.actualizar({ ...cancelado, estado: "cancelado" });
 
     const nuevo = await crear.execute({
       ...turnoBase,
       pacienteId: SEED_IDS.paciente2,
       sillonId: SEED_IDS.sillon2,
-      inicio: new Date("2026-11-18T09:00:00.000Z"),
+      inicio: new Date("2027-01-15T09:00:00.000Z"),
     });
 
     expect(nuevo.estado).toBe("pendiente");
@@ -441,13 +442,13 @@ describe("CrearTurno", () => {
 
   it("crea un sobreturno sobre un turno activo del profesional y registra autorizadoPor", async () => {
     const crear = new CrearTurno(repos);
-    const original = await crear.execute({ ...turnoBase, inicio: new Date("2026-11-18T09:00:00.000Z") });
+    const original = await crear.execute({ ...turnoBase, inicio: new Date("2027-01-15T09:00:00.000Z") });
 
     const sobreturno = await crear.execute({
       ...turnoBase,
       pacienteId: SEED_IDS.paciente2,
       sillonId: SEED_IDS.sillon2,
-      inicio: new Date("2026-11-18T09:15:00.000Z"),
+      inicio: new Date("2027-01-15T09:15:00.000Z"),
       esSobreturno: true,
       autorizadoPor: SEED_IDS.admin,
     });
@@ -464,34 +465,34 @@ describe("CrearTurno", () => {
   it("crea un sobreturno sobre un bloqueo del profesional con sillón libre", async () => {
     const bloqueo = await bloquear({
       profesionalId: SEED_IDS.profesional1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
     const sobreturno = await new CrearTurno(repos).execute({
       ...turnoBase,
-      inicio: new Date("2026-11-18T09:30:00.000Z"),
+      inicio: new Date("2027-01-15T09:30:00.000Z"),
       esSobreturno: true,
       autorizadoPor: SEED_IDS.recepcion,
     });
 
     expect(sobreturno.esSobreturno).toBe(true);
     expect(sobreturno.autorizadoPor).toBe(SEED_IDS.recepcion);
-    expect(sobreturno.fin.toISOString()).toBe("2026-11-18T10:00:00.000Z");
+    expect(sobreturno.fin.toISOString()).toBe("2027-01-15T10:00:00.000Z");
     expect(await repos.turnos.listar()).toHaveLength(1);
     expect(bloqueo.profesionalId).toBe(SEED_IDS.profesional1);
   });
 
   it("esSobreturno: false mantiene el rechazo por solapamiento profesional", async () => {
     const crear = new CrearTurno(repos);
-    await crear.execute({ ...turnoBase, inicio: new Date("2026-11-18T09:00:00.000Z") });
+    await crear.execute({ ...turnoBase, inicio: new Date("2027-01-15T09:00:00.000Z") });
 
     await expect(
       crear.execute({
         ...turnoBase,
         pacienteId: SEED_IDS.paciente2,
         sillonId: SEED_IDS.sillon2,
-        inicio: new Date("2026-11-18T09:15:00.000Z"),
+        inicio: new Date("2027-01-15T09:15:00.000Z"),
         esSobreturno: false,
         autorizadoPor: SEED_IDS.admin,
       }),
@@ -502,14 +503,14 @@ describe("CrearTurno", () => {
   it("esSobreturno: false mantiene el rechazo por bloqueo profesional", async () => {
     await bloquear({
       profesionalId: SEED_IDS.profesional1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
     await expect(
       new CrearTurno(repos).execute({
         ...turnoBase,
-        inicio: new Date("2026-11-18T09:30:00.000Z"),
+        inicio: new Date("2027-01-15T09:30:00.000Z"),
         esSobreturno: false,
         autorizadoPor: SEED_IDS.admin,
       }),
@@ -520,13 +521,13 @@ describe("CrearTurno", () => {
   it("un bloqueo de otro profesional no afecta al sobreturno", async () => {
     await bloquear({
       profesionalId: SEED_IDS.profesional2,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
     const sobreturno = await new CrearTurno(repos).execute({
       ...turnoBase,
-      inicio: new Date("2026-11-18T09:00:00.000Z"),
+      inicio: new Date("2027-01-15T09:00:00.000Z"),
       esSobreturno: true,
       autorizadoPor: SEED_IDS.recepcion,
     });
@@ -539,7 +540,7 @@ describe("CrearTurno", () => {
   it("un sobreturno sin conflicto persiste un único turno pero igual queda auditado", async () => {
     const turno = await new CrearTurno(repos).execute({
       ...turnoBase,
-      inicio: new Date("2026-11-18T09:00:00.000Z"),
+      inicio: new Date("2027-01-15T09:00:00.000Z"),
       esSobreturno: true,
       autorizadoPor: SEED_IDS.admin,
     });
@@ -552,7 +553,7 @@ describe("CrearTurno", () => {
   it("un turno normal sin flags no persiste autorizadoPor", async () => {
     const turno = await new CrearTurno(repos).execute({
       ...turnoBase,
-      inicio: new Date("2026-11-18T09:00:00.000Z"),
+      inicio: new Date("2027-01-15T09:00:00.000Z"),
       autorizadoPor: SEED_IDS.admin,
     });
 
@@ -562,14 +563,14 @@ describe("CrearTurno", () => {
 
   it("un sobreturno nunca omite el solapamiento de sillón", async () => {
     const crear = new CrearTurno(repos);
-    const ocupado = await crear.execute({ ...turnoBase, inicio: new Date("2026-11-18T09:00:00.000Z") });
+    const ocupado = await crear.execute({ ...turnoBase, inicio: new Date("2027-01-15T09:00:00.000Z") });
 
     let error: unknown;
     try {
       await crear.execute({
         ...turnoBase,
         pacienteId: SEED_IDS.paciente2,
-        inicio: new Date("2026-11-18T09:15:00.000Z"),
+        inicio: new Date("2027-01-15T09:15:00.000Z"),
         esSobreturno: true,
         autorizadoPor: SEED_IDS.admin,
       });
@@ -587,15 +588,15 @@ describe("CrearTurno", () => {
   it("un sobreturno nunca omite el bloqueo de sillón y lo identifica en details", async () => {
     const bloqueo = await bloquear({
       sillonId: SEED_IDS.sillon1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
     let error: unknown;
     try {
       await new CrearTurno(repos).execute({
         ...turnoBase,
-        inicio: new Date("2026-11-18T09:30:00.000Z"),
+        inicio: new Date("2027-01-15T09:30:00.000Z"),
         esSobreturno: true,
         autorizadoPor: SEED_IDS.admin,
       });
@@ -610,13 +611,13 @@ describe("CrearTurno", () => {
 
   it("esSobreturno y forzar juntos siguen rechazando el solapamiento de sillón", async () => {
     const crear = new CrearTurno(repos);
-    await crear.execute({ ...turnoBase, inicio: new Date("2026-11-18T09:00:00.000Z") });
+    await crear.execute({ ...turnoBase, inicio: new Date("2027-01-15T09:00:00.000Z") });
 
     await expect(
       crear.execute({
         ...turnoBase,
         pacienteId: SEED_IDS.paciente2,
-        inicio: new Date("2026-11-18T09:15:00.000Z"),
+        inicio: new Date("2027-01-15T09:15:00.000Z"),
         esSobreturno: true,
         forzar: true,
         autorizadoPor: SEED_IDS.admin,
@@ -627,13 +628,13 @@ describe("CrearTurno", () => {
 
   it("da precedencia al sillón aunque el profesional también tenga turno solapado", async () => {
     const crear = new CrearTurno(repos);
-    await crear.execute({ ...turnoBase, inicio: new Date("2026-11-18T09:00:00.000Z") });
+    await crear.execute({ ...turnoBase, inicio: new Date("2027-01-15T09:00:00.000Z") });
 
     await expect(
       crear.execute({
         ...turnoBase,
         pacienteId: SEED_IDS.paciente2,
-        inicio: new Date("2026-11-18T09:15:00.000Z"),
+        inicio: new Date("2027-01-15T09:15:00.000Z"),
         esSobreturno: true,
         autorizadoPor: SEED_IDS.admin,
       }),
@@ -642,35 +643,35 @@ describe("CrearTurno", () => {
 
   it("un sobreturno contiguo a turno y bloqueo del sillón se permite", async () => {
     const crear = new CrearTurno(repos);
-    await crear.execute({ ...turnoBase, inicio: new Date("2026-11-18T09:00:00.000Z") });
+    await crear.execute({ ...turnoBase, inicio: new Date("2027-01-15T09:00:00.000Z") });
     await bloquear({
       sillonId: SEED_IDS.sillon1,
-      inicio: "2026-11-18T10:00:00.000Z",
-      fin: "2026-11-18T11:00:00.000Z",
+      inicio: "2027-01-15T10:00:00.000Z",
+      fin: "2027-01-15T11:00:00.000Z",
     });
 
     const contiguo = await crear.execute({
       ...turnoBase,
       pacienteId: SEED_IDS.paciente2,
-      inicio: new Date("2026-11-18T09:30:00.000Z"),
+      inicio: new Date("2027-01-15T09:30:00.000Z"),
       esSobreturno: true,
       autorizadoPor: SEED_IDS.admin,
     });
 
-    expect(contiguo.inicio.toISOString()).toBe("2026-11-18T09:30:00.000Z");
-    expect(contiguo.fin.toISOString()).toBe("2026-11-18T10:00:00.000Z");
+    expect(contiguo.inicio.toISOString()).toBe("2027-01-15T09:30:00.000Z");
+    expect(contiguo.fin.toISOString()).toBe("2027-01-15T10:00:00.000Z");
     expect(await repos.turnos.listar()).toHaveLength(2);
   });
 
   it("un sobreturno con superposición de un minuto en el sillón se rechaza", async () => {
     const crear = new CrearTurno(repos);
-    await crear.execute({ ...turnoBase, inicio: new Date("2026-11-18T09:00:00.000Z") });
+    await crear.execute({ ...turnoBase, inicio: new Date("2027-01-15T09:00:00.000Z") });
 
     await expect(
       crear.execute({
         ...turnoBase,
         pacienteId: SEED_IDS.paciente2,
-        inicio: new Date("2026-11-18T09:29:00.000Z"),
+        inicio: new Date("2027-01-15T09:29:00.000Z"),
         esSobreturno: true,
         autorizadoPor: SEED_IDS.admin,
       }),
@@ -681,13 +682,13 @@ describe("CrearTurno", () => {
   it("forzar con sobreturno omite solo el bloqueo de sillón y lo audita", async () => {
     const bloqueo = await bloquear({
       sillonId: SEED_IDS.sillon1,
-      inicio: "2026-11-18T09:00:00.000Z",
-      fin: "2026-11-18T10:00:00.000Z",
+      inicio: "2027-01-15T09:00:00.000Z",
+      fin: "2027-01-15T10:00:00.000Z",
     });
 
     const turno = await new CrearTurno(repos).execute({
       ...turnoBase,
-      inicio: new Date("2026-11-18T09:30:00.000Z"),
+      inicio: new Date("2027-01-15T09:30:00.000Z"),
       esSobreturno: true,
       forzar: true,
       autorizadoPor: SEED_IDS.admin,
@@ -697,5 +698,33 @@ describe("CrearTurno", () => {
     expect(turno.autorizadoPor).toBe(SEED_IDS.admin);
     expect(await repos.turnos.listar()).toHaveLength(1);
     expect((await repos.bloqueos.listar()).map((b) => b.id)).toEqual([bloqueo.id]);
+  });
+
+  it("rechaza un turno cuyo inicio es anterior al momento actual y no persiste", async () => {
+    const crearTurno = new CrearTurno(repos);
+    await expect(
+      crearTurno.execute({
+        pacienteId: SEED_IDS.paciente1,
+        profesionalId: SEED_IDS.profesional1,
+        sillonId: SEED_IDS.sillon1,
+        prestacionId: SEED_IDS.consulta,
+        inicio: new Date("2020-01-01T09:00:00.000Z"),
+        creadoPor: SEED_IDS.recepcion,
+      }),
+    ).rejects.toBeInstanceOf(TurnoEnElPasadoError);
+
+    try {
+      await crearTurno.execute({
+        pacienteId: SEED_IDS.paciente1,
+        profesionalId: SEED_IDS.profesional1,
+        sillonId: SEED_IDS.sillon1,
+        prestacionId: SEED_IDS.consulta,
+        inicio: new Date("2020-01-01T09:00:00.000Z"),
+        creadoPor: SEED_IDS.recepcion,
+      });
+    } catch (e) {
+      expect((e as TurnoEnElPasadoError).code).toBe("TURNO_EN_EL_PASADO");
+    }
+    expect(await repos.turnos.listar()).toHaveLength(0);
   });
 });

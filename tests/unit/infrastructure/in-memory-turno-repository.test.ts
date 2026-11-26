@@ -5,7 +5,7 @@ import type { Turno } from "../../../src/domain/turno/turno.js";
 import { RecursoNoEncontradoError } from "../../../src/domain/turno/turno.errors.js";
 import { InMemoryTurnoRepository } from "../../../src/infrastructure/persistence/in-memory-turno-repository.js";
 
-const hora = (hhmm: string): Date => new Date(`2026-11-18T${hhmm}:00.000Z`);
+const hora = (hhmm: string): Date => new Date(`2027-01-15T${hhmm}:00.000Z`);
 const intervalo = (desde: string, hasta: string): Intervalo =>
   new Intervalo(hora(desde), hora(hasta));
 

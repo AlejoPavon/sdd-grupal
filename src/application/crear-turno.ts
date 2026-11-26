@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { TurnoBloqueadoError } from "../domain/bloqueo/bloqueo.errors.js";
 import { Intervalo } from "../domain/turno/intervalo.js";
-import { TurnoSolapadoError } from "../domain/turno/turno.errors.js";
+import { TurnoEnElPasadoError, TurnoSolapadoError } from "../domain/turno/turno.errors.js";
 import type { Turno } from "../domain/turno/turno.js";
 import type { Repositorios } from "./ports/repositorios.js";
 import { requerirRecurso, validarRecursoActivo } from "./validar-recursos.js";
@@ -44,6 +44,9 @@ export class CrearTurno {
   constructor(private readonly repos: Repositorios) {}
 
   async execute(input: CrearTurnoInput): Promise<Turno> {
+    if (input.inicio.getTime() < Date.now()) {
+      throw new TurnoEnElPasadoError();
+    }
     const esSobreturno = input.esSobreturno === true;
     const omisiones = omisionesPara(input);
 

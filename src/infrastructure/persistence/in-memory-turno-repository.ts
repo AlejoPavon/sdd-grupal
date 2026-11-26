@@ -26,6 +26,7 @@ export class InMemoryTurnoRepository implements TurnoRepository {
       .filter((t) => !filtros.hasta || t.inicio < filtros.hasta)
       .filter((t) => !filtros.profesionalId || t.profesionalId === filtros.profesionalId)
       .filter((t) => !filtros.sillonId || t.sillonId === filtros.sillonId)
+      .filter((t) => !filtros.pacienteId || t.pacienteId === filtros.pacienteId)
       .filter((t) => !filtros.estados || filtros.estados.includes(t.estado))
       .sort((a, b) => a.inicio.getTime() - b.inicio.getTime())
       .map((t) => ({ ...t }));

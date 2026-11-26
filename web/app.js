@@ -333,7 +333,9 @@ async function cargarAgenda() {
   const { desde, hasta } = rangoDelDia(estado.filtros.fecha);
   const parametros = new URLSearchParams({ desde, hasta });
   if (estado.filtros.profesionalId) parametros.set("profesionalId", estado.filtros.profesionalId);
-  estado.turnos = await api(`/api/turnos?${parametros}`);
+  estado.turnos = (await api(`/api/turnos?${parametros}`)).filter(
+    (turno) => turno.estado === "pendiente" || turno.estado === "confirmado",
+  );
 }
 
 async function cargarBloqueos() {

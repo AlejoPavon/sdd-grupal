@@ -77,3 +77,10 @@ export class RangoInvalidoError extends DominioError {
     super("El rango de consulta es inválido: 'desde' debe ser menor que 'hasta'");
   }
 }
+
+export class TurnoEnElPasadoError extends DominioError {
+  readonly code = "TURNO_EN_EL_PASADO";
+  constructor() {
+    super("No se puede crear un turno en el pasado");
+  }
+}

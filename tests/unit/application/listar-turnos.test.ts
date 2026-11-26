@@ -47,37 +47,37 @@ describe("ListarTurnos", () => {
   it("lanza RANGO_INVALIDO si desde >= hasta", async () => {
     const listar = new ListarTurnos(repos);
     await expect(
-      listar.execute(new Date("2026-11-18T10:00:00.000Z"), new Date("2026-11-18T09:00:00.000Z")),
+      listar.execute(new Date("2027-01-15T10:00:00.000Z"), new Date("2027-01-15T09:00:00.000Z")),
     ).rejects.toBeInstanceOf(RangoInvalidoError);
     try {
-      await listar.execute(new Date("2026-11-18T10:00:00.000Z"), new Date("2026-11-18T10:00:00.000Z"));
+      await listar.execute(new Date("2027-01-15T10:00:00.000Z"), new Date("2027-01-15T10:00:00.000Z"));
     } catch (e) {
       expect((e as RangoInvalidoError).code).toBe("RANGO_INVALIDO");
     }
   });
 
   it("filtra por rango y ordena por inicio", async () => {
-    await crearTurno("2026-11-18T11:00:00.000Z");
-    await crearTurno("2026-11-18T09:00:00.000Z");
+    await crearTurno("2027-01-15T11:00:00.000Z");
+    await crearTurno("2027-01-15T09:00:00.000Z");
 
     const listar = new ListarTurnos(repos);
     const result = await listar.execute({
-      desde: new Date("2026-11-18T08:00:00.000Z"),
-      hasta: new Date("2026-11-18T12:00:00.000Z"),
+      desde: new Date("2027-01-15T08:00:00.000Z"),
+      hasta: new Date("2027-01-15T12:00:00.000Z"),
     });
     expect(result).toHaveLength(2);
     expect(new Date(result[0]!.inicio).getTime()).toBeLessThan(new Date(result[1]!.inicio).getTime());
   });
 
   it("filtra combinado por profesional y sillón", async () => {
-    await crearTurno("2026-11-18T09:00:00.000Z");
+    await crearTurno("2027-01-15T09:00:00.000Z");
     const crear = new CrearTurno(repos);
     await crear.execute({
       pacienteId: SEED_IDS.paciente2,
       profesionalId: SEED_IDS.profesional2,
       sillonId: SEED_IDS.sillon2,
       prestacionId: SEED_IDS.consulta,
-      inicio: new Date("2026-11-18T09:00:00.000Z"),
+      inicio: new Date("2027-01-15T09:00:00.000Z"),
       creadoPor: SEED_IDS.recepcion,
     });
 
@@ -91,17 +91,28 @@ describe("ListarTurnos", () => {
     expect(result[0]!.sillonId).toBe(SEED_IDS.sillon1);
   });
 
-  it("excluye turnos cancelados", async () => {
-    const turno = await crearTurno("2026-11-18T09:00:00.000Z");
+  it("incluye turnos cancelados en la lista general", async () => {
+    const turno = await crearTurno("2027-01-15T09:00:00.000Z");
     await repos.turnos.actualizar({ ...turno, estado: "cancelado" });
 
     const listar = new ListarTurnos(repos);
     const result = await listar.execute();
-    expect(result).toHaveLength(0);
+    expect(result).toHaveLength(1);
+    expect(result[0]!.estado).toBe("cancelado");
+  });
+
+  it("filtra por paciente", async () => {
+    await crearTurno("2027-01-15T09:00:00.000Z");
+    await crearTurno("2027-01-15T10:00:00.000Z", { pacienteId: SEED_IDS.paciente2 });
+
+    const listar = new ListarTurnos(repos);
+    const result = await listar.execute({ pacienteId: SEED_IDS.paciente1 });
+    expect(result).toHaveLength(1);
+    expect(result[0]!.pacienteId).toBe(SEED_IDS.paciente1);
   });
 
   it("enriquece con paciente y prestacion", async () => {
-    await crearTurno("2026-11-18T09:00:00.000Z");
+    await crearTurno("2027-01-15T09:00:00.000Z");
     const listar = new ListarTurnos(repos);
     const result = await listar.execute();
     expect(result[0]!.paciente).toEqual({

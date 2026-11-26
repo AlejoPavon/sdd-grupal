@@ -194,6 +194,23 @@ describe("sqlite turno repository", () => {
     expect(res.map((t) => t.id)).toEqual(["t1", "t2"]);
   });
 
+  it("listar filtra por paciente", async () => {
+    dir = mkdtempSync(path.join(tmpdir(), "turno-"));
+    db = crearConexion(`file:${path.join(dir, "t.db")}`);
+    runMigrations(db);
+    seed(db);
+    db.prepare("INSERT INTO paciente(id,nombre,apellido,activo,created_at,updated_at) VALUES (?,?,?,?,?,?)").run("pac2", "C", "D", 1, Date.now(), Date.now());
+    const repo = new SqliteTurnoRepository(db);
+    const now = new Date();
+    const t1 = { id: "t1", pacienteId: "pac1", profesionalId: "prof1", sillonId: "sil1", prestacionId: "pre1", inicio: new Date("2026-01-01T09:00:00Z"), fin: new Date("2026-01-01T09:30:00Z"), estado: "pendiente" as EstadoTurno, esSobreturno: false, createdBy: "u1", createdAt: now, updatedAt: now };
+    const t2 = { ...t1, id: "t2", pacienteId: "pac2", inicio: new Date("2026-01-01T10:00:00Z"), fin: new Date("2026-01-01T10:30:00Z") };
+    await repo.crear(t1);
+    await repo.crear(t2);
+
+    const res = await repo.listar({ pacienteId: "pac1" });
+    expect(res.map((t) => t.id)).toEqual(["t1"]);
+  });
+
   it("actualizar inexistente lanza RecursoNoEncontradoError", async () => {
     dir = mkdtempSync(path.join(tmpdir(), "turno-"));
     db = crearConexion(`file:${path.join(dir, "t.db")}`);

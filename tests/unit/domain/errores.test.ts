@@ -12,13 +12,13 @@ const turno: Turno = {
   profesionalId: "pr1",
   sillonId: "s1",
   prestacionId: "ps1",
-  inicio: new Date("2026-11-18T09:00:00.000Z"),
-  fin: new Date("2026-11-18T09:30:00.000Z"),
+  inicio: new Date("2027-01-15T09:00:00.000Z"),
+  fin: new Date("2027-01-15T09:30:00.000Z"),
   estado: "pendiente",
   esSobreturno: false,
   createdBy: "u1",
-  createdAt: new Date("2026-11-18T08:00:00.000Z"),
-  updatedAt: new Date("2026-11-18T08:00:00.000Z"),
+  createdAt: new Date("2027-01-15T08:00:00.000Z"),
+  updatedAt: new Date("2027-01-15T08:00:00.000Z"),
 };
 
 describe("TurnoSolapadoError", () => {
