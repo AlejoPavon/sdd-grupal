@@ -84,7 +84,7 @@ describe("helpers del frontend", () => {
   it("recarga pacientes sin filtro al abrir nuevo turno", () => {
     expect(cargasPorVista("nuevo-turno")).toEqual(["catalogos", "pacientes"]);
     expect(cargasPorVista("pacientes")).toEqual(["pacientes"]);
-    expect(cargasPorVista("agenda")).toEqual(["agenda"]);
+    expect(cargasPorVista("agenda")).toEqual(["catalogos", "pacientes", "agenda"]);
     expect(cargasPorVista("bloqueos")).toEqual(["catalogos", "bloqueos"]);
     expect(cargasPorVista("desconocida")).toEqual([]);
   });

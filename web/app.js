@@ -31,10 +31,12 @@ const ESTADO_TURNO = {
   ausente: "Ausente",
 };
 
+const ESTADOS_TURNO = Object.entries(ESTADO_TURNO).map(([id, nombre]) => ({ id, nombre }));
+
 const estado = {
   usuario: null,
   vista: "login",
-  filtros: { fecha: hoyEnZona(), profesionalId: "" },
+  filtros: { fecha: hoyEnZona(), profesionalId: "", sillonId: "", pacienteId: "", estado: "" },
   profesionales: [],
   sillones: [],
   prestaciones: [],
@@ -150,7 +152,7 @@ function vistaLogin() {
 
 function tablaTurnos() {
   if (estado.turnos.length === 0) {
-    return '<p class="empty">No hay turnos para la fecha y el profesional seleccionados.</p>';
+    return '<p class="empty">No hay turnos para los filtros seleccionados.</p>';
   }
   const puedeCancelar = esGestion(estado.usuario.rol);
   const filas = estado.turnos
@@ -181,7 +183,7 @@ function vistaAgenda() {
     <div class="page-head">
       <p class="eyebrow">Agenda</p>
       <h1>Turnos del día</h1>
-      <p class="muted">Los turnos se muestran en la zona horaria del consultorio.</p>
+      <p class="muted">Incluye turnos en todos los estados, ordenados por hora y en la zona horaria del consultorio.</p>
     </div>
     <form class="toolbar card" data-formulario="filtro-agenda">
       <label>Fecha
@@ -189,6 +191,15 @@ function vistaAgenda() {
       </label>
       <label>Profesional
         <select name="profesionalId">${opcionesSelect(estado.profesionales, estado.filtros.profesionalId, "Todos los profesionales")}</select>
+      </label>
+      <label>Sillón
+        <select name="sillonId">${opcionesSelect(estado.sillones, estado.filtros.sillonId, "Todos los sillones")}</select>
+      </label>
+      <label>Paciente
+        <select name="pacienteId">${opcionesSelect(estado.pacientes, estado.filtros.pacienteId, "Todos los pacientes", persona)}</select>
+      </label>
+      <label>Estado
+        <select name="estado">${opcionesSelect(ESTADOS_TURNO, estado.filtros.estado, "Todos los estados")}</select>
       </label>
       <button class="primary" type="submit">Buscar</button>
     </form>
@@ -333,9 +344,12 @@ async function cargarAgenda() {
   const { desde, hasta } = rangoDelDia(estado.filtros.fecha);
   const parametros = new URLSearchParams({ desde, hasta });
   if (estado.filtros.profesionalId) parametros.set("profesionalId", estado.filtros.profesionalId);
-  estado.turnos = (await api(`/api/turnos?${parametros}`)).filter(
-    (turno) => turno.estado === "pendiente" || turno.estado === "confirmado",
-  );
+  if (estado.filtros.sillonId) parametros.set("sillonId", estado.filtros.sillonId);
+  if (estado.filtros.pacienteId) parametros.set("pacienteId", estado.filtros.pacienteId);
+  const turnos = await api(`/api/turnos?${parametros}`);
+  estado.turnos = estado.filtros.estado
+    ? turnos.filter((turno) => turno.estado === estado.filtros.estado)
+    : turnos;
 }
 
 async function cargarBloqueos() {
@@ -444,6 +458,9 @@ document.addEventListener("submit", async (evento) => {
       case "filtro-agenda": {
         estado.filtros.fecha = datos.fecha;
         estado.filtros.profesionalId = datos.profesionalId ?? "";
+        estado.filtros.sillonId = datos.sillonId ?? "";
+        estado.filtros.pacienteId = datos.pacienteId ?? "";
+        estado.filtros.estado = datos.estado ?? "";
         await cargarAgenda();
         break;
       }

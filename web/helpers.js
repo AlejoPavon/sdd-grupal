@@ -102,6 +102,7 @@ export function mensajeError(datos, estado) {
   if (estado === 403) return "No tenés permiso para realizar esta acción.";
   if (datos?.code === "VALIDACION_FALLIDA") return "Revisá los datos ingresados.";
   if (datos?.code === "TURNO_SOLAPADO_SILLON") return "El sillón ya tiene un turno en ese horario.";
+  if (datos?.code === "TURNO_EN_EL_PASADO") return "No podés crear un turno en una fecha u hora pasada.";
   return datos?.message ?? "No se pudo completar la operación.";
 }
 
@@ -119,7 +120,7 @@ export function esGestion(rol) {
 export function cargasPorVista(vista) {
   switch (vista) {
     case "agenda":
-      return ["agenda"];
+      return ["catalogos", "pacientes", "agenda"];
     case "pacientes":
       return ["pacientes"];
     case "nuevo-turno":
