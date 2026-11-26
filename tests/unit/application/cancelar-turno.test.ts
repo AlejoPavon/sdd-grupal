@@ -31,7 +31,7 @@ describe("CancelarTurno", () => {
     await cargarSeed(repos);
   });
 
-  async function crearTurno(inicio = "2026-11-18T09:00:00.000Z") {
+  async function crearTurno(inicio = "2027-01-15T09:00:00.000Z") {
     const crear = new CrearTurno(repos);
     return crear.execute({
       pacienteId: SEED_IDS.paciente1,

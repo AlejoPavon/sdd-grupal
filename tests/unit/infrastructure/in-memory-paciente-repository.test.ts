@@ -10,8 +10,8 @@ function crearPaciente(sobrescribir: Partial<Paciente> = {}): Paciente {
     nombre: "Paciente",
     apellido: "Demo",
     activo: true,
-    createdAt: new Date("2026-11-18T08:00:00.000Z"),
-    updatedAt: new Date("2026-11-18T08:00:00.000Z"),
+    createdAt: new Date("2027-01-15T08:00:00.000Z"),
+    updatedAt: new Date("2027-01-15T08:00:00.000Z"),
     ...sobrescribir,
   };
 }

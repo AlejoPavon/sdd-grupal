@@ -21,8 +21,8 @@ import { InMemoryTurnoRepository } from "../../../../src/infrastructure/persiste
 import { InMemoryUsuarioRepository } from "../../../../src/infrastructure/persistence/in-memory-usuario-repository.js";
 import { cargarSeed, SEED_IDS } from "../../../../src/infrastructure/seed.js";
 
-const INICIO = new Date("2026-11-18T09:00:00.000Z");
-const FIN = new Date("2026-11-18T09:30:00.000Z");
+const INICIO = new Date("2027-01-15T09:00:00.000Z");
+const FIN = new Date("2027-01-15T09:30:00.000Z");
 const ID_INEXISTENTE = "00000000-0000-4000-8000-000000000099";
 
 describe("CrearBloqueo", () => {

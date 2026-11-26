@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Intervalo } from "../../../src/domain/turno/intervalo.js";
 import { IntervaloInvalidoError } from "../../../src/domain/turno/turno.errors.js";
 
-const hora = (hhmm: string): Date => new Date(`2026-11-18T${hhmm}:00.000Z`);
+const hora = (hhmm: string): Date => new Date(`2027-01-15T${hhmm}:00.000Z`);
 const intervalo = (desde: string, hasta: string): Intervalo =>
   new Intervalo(hora(desde), hora(hasta));
 
