@@ -7,6 +7,7 @@ import {
   RecursoInactivoError,
   RecursoNoEncontradoError,
   TransicionInvalidaError,
+  TurnoEnElPasadoError,
   TurnoSolapadoError,
 } from "../domain/turno/turno.errors.js";
 import {
@@ -68,6 +69,10 @@ export function registrarErrorHandler(app: FastifyInstance): void {
         message: error.message,
         details: {},
       });
+    }
+
+    if (error instanceof TurnoEnElPasadoError) {
+      return responderDominio(reply, 400, error);
     }
 
     if (error instanceof TransicionInvalidaError) {
